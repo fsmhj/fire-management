@@ -7,141 +7,204 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
 :root{
-  --red:#e53e3e;--red-dark:#c53030;--red-light:#fff5f5;--red-border:#fed7d7;
-  --orange:#dd6b20;--orange-light:#fffaf0;
-  --green:#38a169;--green-light:#f0fff4;--green-border:#9ae6b4;
-  --blue:#3182ce;--blue-light:#ebf8ff;--blue-border:#90cdf4;
-  --purple:#805ad5;--purple-light:#faf5ff;--purple-border:#d6bcfa;
-  --gray:#718096;--gray-light:#f7fafc;--gray-border:#e2e8f0;
-  --text:#2d3748;--text2:#4a5568;--text3:#a0aec0;
-  --surface:#ffffff;--bg:#f7fafc;
+  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#eff6ff;--primary-border:#bfdbfe;
+  --green:#16a34a;--green-light:#f0fff4;--green-border:#86efac;
+  --amber:#d97706;--amber-light:#fffbeb;--amber-border:#fcd34d; 
+  --red:#dc2626;--red-light:#fef2f2;--red-border:#fca5a5;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --teal:#0d9488;--teal-light:#f0fdfa;--teal-border:#99f6e4;
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.06);
   --radius:12px;--radius-sm:8px;--radius-xs:6px;
-  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
-  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+}
+.dark{
+  --primary:#60a5fa;--primary-dark:#3b82f6;--primary-light:#1e3a5f;--primary-border:#1e40af;
+  --green:#4ade80;--green-light:#052e16;--green-border:#166534;
+  --amber:#fbbf24;--amber-light:#271a00;--amber-border:#78350f;
+  --red:#f87171;--red-light:#2d0a0a;--red-border:#7f1d1d;
+  --purple:#a78bfa;--purple-light:#1e0a3c;
+  --teal:#2dd4bf;--teal-light:#022c22;--teal-border:#134e4a;
+  --bg:#0f172a;--surface:#1e293b;--surface2:#293548;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --border:#334155;--border2:#475569;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 6px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;padding-bottom:80px}
-.header{background:var(--red);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md)}
-.logo{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;transition:background .2s,color .2s}
+
+/* ── 로그인 화면 ── */
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.login-box{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:32px 28px;width:100%;max-width:360px}
+.login-logo{font-size:40px;text-align:center;margin-bottom:8px}
+.login-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--text)}
+.login-sub{font-size:13px;text-align:center;color:var(--text3);margin-bottom:28px}
+.login-error{background:var(--red-light);color:var(--red);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:12px;display:none}
+
+/* ── 앱 ── */
+.app{display:none}
+.app.visible{display:block}
+.header{background:var(--primary);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md)}
+.logo{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px}
 .header-right{display:flex;align-items:center;gap:8px}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#68d391}
-.sync-dot.syncing{background:#f6e05e;animation:pulse 1s infinite}
-.sync-dot.error{background:#fc8181}
-.user-badge{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#86efac;flex-shrink:0}
+.sync-dot.syncing{background:#fcd34d;animation:pulse 1s infinite}
+.sync-dot.error{background:#f87171}
+.user-badge{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:4px}
+.admin-crown{font-size:11px}
+.dark-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--gray-border);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:none;background:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text3);font-size:10px;font-weight:500;gap:4px;transition:color .15s}
-.nav-item.active{color:var(--red)}
-.nav-icon{font-size:22px;line-height:1}
-.page{display:none;padding:16px}.page.active{display:block}
-.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
-.btn{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--gray-border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text2);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px;border:none;background:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text3);font-size:9px;font-weight:500;gap:3px;transition:color .15s}
+.nav-item.active{color:var(--primary)}
+.nav-icon{font-size:20px;line-height:1}
+.page{display:none;padding:16px;padding-bottom:90px}.page.active{display:block}
+
+/* 버튼 */
+.btn{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text2);transition:all .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
 .btn:active{opacity:.8}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 .btn-red{background:var(--red);color:#fff;border-color:var(--red)}
-.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn-sm{padding:5px 12px;font-size:12px}
 .btn-xs{padding:3px 8px;font-size:11px;border-radius:var(--radius-xs)}
-.btn-icon{padding:6px;border-radius:var(--radius-xs);min-width:32px;justify-content:center}
 .btn-outline-red{color:var(--red);border-color:var(--red-border);background:var(--red-light)}
 .btn-outline-green{color:var(--green);border-color:var(--green-border);background:var(--green-light)}
-.btn-outline-blue{color:var(--blue);border-color:var(--blue-border);background:var(--blue-light)}
+.btn-outline-primary{color:var(--primary);border-color:var(--primary-border);background:var(--primary-light)}
+.btn-block{width:100%;justify-content:center}
+
+/* 배지 */
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.b-red{background:var(--red-light);color:var(--red)}
+.b-primary{background:var(--primary-light);color:var(--primary)}
 .b-green{background:var(--green-light);color:var(--green)}
-.b-blue{background:var(--blue-light);color:var(--blue)}
-.b-orange{background:var(--orange-light);color:var(--orange)}
+.b-amber{background:var(--amber-light);color:var(--amber)}
+.b-red{background:var(--red-light);color:var(--red)}
 .b-purple{background:var(--purple-light);color:var(--purple)}
-.b-gray{background:var(--gray-light);color:var(--gray)}
+.b-teal{background:var(--teal-light);color:var(--teal)}
+.b-gray{background:var(--surface2);color:var(--text3)}
+
+/* 폼 */
 .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .form-label{font-size:12px;font-weight:600;color:var(--text2)}
-input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--gray-border);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border .15s;-webkit-appearance:none}
-input:focus,select:focus,textarea:focus{border-color:var(--red)}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
 textarea{resize:vertical;min-height:80px}
 .input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* 모달 */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:20px;animation:slideUp .2s ease}
+.modal{background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:20px;animation:slideUp .2s ease}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-handle{width:36px;height:4px;background:var(--gray-border);border-radius:2px;margin:0 auto 16px}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
 .modal-title{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
 .modal-footer{display:flex;gap:8px;margin-top:16px}
-.modal-footer .btn{flex:1;justify-content:center}
+.modal-footer .btn{flex:1}
+
+/* 재고 */
 .inv-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .inv-stat{background:var(--surface);border-radius:var(--radius-sm);padding:12px;text-align:center;box-shadow:var(--shadow)}
-.inv-stat-num{font-size:24px;font-weight:700;font-family:monospace}
+.inv-stat-num{font-size:22px;font-weight:700;font-family:monospace}
 .inv-stat-label{font-size:11px;color:var(--text3);margin-top:2px}
 .inv-search{display:flex;gap:8px;margin-bottom:12px}
 .inv-search input{flex:1}
-.item-card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:14px;margin-bottom:10px;border-left:4px solid var(--gray-border)}
+.cat-group{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
+.cat-group-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
+.cat-group-head:hover{background:var(--surface2)}
+.cat-group-head.open{border-bottom:1px solid var(--border)}
+.cat-group-left{display:flex;align-items:center;gap:10px}
+.cat-group-icon{font-size:22px}
+.cat-group-name{font-size:15px;font-weight:700;color:var(--text)}
+.cat-group-count{font-size:11px;color:var(--text3)}
+.cat-arrow{font-size:12px;color:var(--text3);transition:transform .2s}
+.cat-arrow.open{transform:rotate(90deg)}
+.cat-group-body{display:none;padding:0 10px 10px}
+.cat-group-body.open{display:block}
+.item-card{background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-top:8px;border-left:3px solid var(--border2)}
 .item-card.low{border-left-color:var(--red)}
 .item-card.ok{border-left-color:var(--green)}
 .item-name{font-size:14px;font-weight:700;color:var(--text)}
-.item-category{font-size:11px;color:var(--text3);margin-top:2px}
+.item-sub{font-size:11px;color:var(--text3);margin-top:2px}
 .item-qty-wrap{display:flex;align-items:center;gap:8px;margin-top:10px}
-.qty-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--gray-border);background:var(--surface);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text2)}
-.qty-display{font-size:22px;font-weight:700;font-family:monospace;min-width:60px;text-align:center}
+.qty-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text2)}
+.qty-display{font-size:20px;font-weight:700;font-family:monospace;min-width:52px;text-align:center;color:var(--text)}
 .qty-display.low{color:var(--red)}
 .qty-unit{font-size:12px;color:var(--text3)}
-.log-list{margin-top:10px;border-top:1px solid var(--gray-border);padding-top:10px;display:none}
+.log-list{margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:none}
 .log-list.open{display:block}
-.log-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gray-border);font-size:12px;gap:8px}
+.log-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px}
 .log-row:last-child{border-bottom:none}
-.cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;-ms-overflow-style:none;scrollbar-width:none}
-.cat-tabs::-webkit-scrollbar{display:none}
-.cat-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--gray-border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text2);white-space:nowrap;flex-shrink:0}
-.cat-tab.active{background:var(--red);color:#fff;border-color:var(--red)}
-.journal-filter{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;-ms-overflow-style:none;scrollbar-width:none}
-.journal-filter::-webkit-scrollbar{display:none}
-.place-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--gray-border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Noto Sans KR',sans-serif;color:var(--text2)}
-.place-chip.active{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* 업무일지 */
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none}
+.filter-tabs::-webkit-scrollbar{display:none}
+.filter-chip{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Noto Sans KR',sans-serif;color:var(--text2)}
+.filter-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.filter-chip.hosp.active{background:var(--red);border-color:var(--red)}
+.filter-chip.univ.active{background:var(--teal);border-color:var(--teal)}
 .journal-card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:14px;margin-bottom:10px}
 .journal-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap}
 .journal-place{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
 .journal-place.hospital{background:var(--red-light);color:var(--red)}
-.journal-place.univ{background:var(--blue-light);color:var(--blue)}
-.journal-place.custom{background:var(--purple-light);color:var(--purple)}
+.journal-place.univ{background:var(--teal-light);color:var(--teal)}
 .journal-content{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-line}
-.journal-date-group{font-size:12px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--gray-border);margin-bottom:8px}
+.journal-date-group{font-size:12px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:8px}
+
+/* 일정 */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
 .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.cal-month{font-size:16px;font-weight:700}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:16px}
+.cal-month{font-size:16px;font-weight:700;color:var(--text)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px}
 .cal-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:4px 0}
-.cal-dow:first-child{color:var(--red)}
-.cal-dow:last-child{color:var(--blue)}
+.cal-dow:first-child{color:var(--red)}.cal-dow:last-child{color:var(--primary)}
 .cal-day{aspect-ratio:1;border-radius:var(--radius-xs);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;cursor:pointer;transition:background .1s}
-.cal-day:hover{background:var(--gray-light)}
-.cal-day.today .cal-num{background:var(--red);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
-.cal-day.selected{background:var(--red-light)}
+.cal-day:hover{background:var(--surface2)}
+.cal-day.today .cal-num{background:var(--primary);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.cal-day.selected{background:var(--primary-light)}
 .cal-day.other-month .cal-num{color:var(--text3)}
-.cal-day.sun .cal-num{color:var(--red)}
-.cal-day.sat .cal-num{color:var(--blue)}
-.cal-num{font-size:13px;font-weight:500;line-height:24px}
+.cal-day.sun .cal-num{color:var(--red)}.cal-day.sat .cal-num{color:var(--primary)}
+.cal-num{font-size:13px;font-weight:500;line-height:24px;color:var(--text)}
 .cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px}
 .cal-dot{width:5px;height:5px;border-radius:50%}
-.sch-item{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px;border-left:4px solid var(--red);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.sch-item{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px;border-left:4px solid var(--primary);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .sch-title{font-size:14px;font-weight:600;color:var(--text)}
 .sch-meta{font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
 .sch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.selected-date-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;padding:8px 0;border-bottom:1px solid var(--gray-border)}
+.selected-date-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+
+/* 메모 */
+.memo-card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:14px;margin-bottom:10px;border-left:4px solid var(--amber)}
+
+/* 설정 */
 .settings-section{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
-.settings-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text)}
-.firebase-status{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:12px}
+.settings-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.firebase-status{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:8px}
 .firebase-status.connected{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
-.firebase-status.disconnected{background:var(--gray-light);color:var(--gray);border:1px solid var(--gray-border)}
+.firebase-status.disconnected{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* 팀원 관리 */
+.member-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.member-name{font-size:13px;font-weight:700;color:var(--text)}
+.member-role{font-size:11px;color:var(--text3);margin-top:2px}
+.tab-toggle-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tab-toggle{padding:4px 10px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);font-size:11px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text3)}
+.tab-toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.divider{height:1px;background:var(--border);margin:12px 0}
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.fab{position:fixed;bottom:88px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;z-index:90}
+.fab:active{transform:scale(.93)}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.toolbar-right{margin-left:auto;display:flex;gap:8px}
 .toast-wrap{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
-.toast{background:var(--text);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;animation:tin .2s ease;white-space:nowrap}
+.toast{background:var(--text);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:13px;animation:tin .2s ease;white-space:nowrap}
 .toast.success{background:var(--green)}.toast.error{background:var(--red)}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.empty{text-align:center;padding:48px 20px;color:var(--text3)}
-.empty-icon{font-size:40px;margin-bottom:10px}
-.divider{height:1px;background:var(--gray-border);margin:12px 0}
-.fab{position:fixed;bottom:88px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(229,62,62,.4);display:flex;align-items:center;justify-content:center;z-index:90}
-.fab:active{transform:scale(.93)}
 @media(min-width:540px){
-  .modal{border-radius:var(--radius)}
-  .modal-overlay{align-items:center}
-  .page{max-width:540px;margin:0 auto}
+  .modal{border-radius:var(--radius)}.modal-overlay{align-items:center}
+  .page,.login-box{max-width:540px}.page{margin:0 auto}
   .bottom-nav{max-width:540px;left:50%;transform:translateX(-50%)}
   .fab{right:calc(50% - 270px + 20px)}
 }
@@ -149,315 +212,395 @@ textarea{resize:vertical;min-height:80px}
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">🔥 소방업무공유</div>
-  <div class="header-right">
-    <div class="sync-dot" id="syncDot"></div>
-    <div class="user-badge" id="userBadge" onclick="openModal('setUser')">👤 나</div>
-  </div>
-</div>
-
-<!-- 재고관리 -->
-<div class="page active" id="page-inv">
-  <div class="inv-summary" id="invSummary"></div>
-  <div class="cat-tabs" id="catTabs"></div>
-  <div class="inv-search">
-    <input type="text" id="invSearch" placeholder="🔍 품목 검색..." oninput="renderInv()">
-    <button class="btn btn-sm" onclick="openAddItem()">+ 추가</button>
-  </div>
-  <div id="invList"></div>
-</div>
-
-<!-- 업무일지 -->
-<div class="page" id="page-journal">
-  <div class="journal-filter" id="journalFilter"></div>
-  <div id="journalList"></div>
-</div>
-
-<!-- 일정 -->
-<div class="page" id="page-schedule">
-  <div class="card" style="padding:12px">
-    <div class="calendar-header">
-      <button class="btn btn-sm btn-icon" onclick="moveMonth(-1)">‹</button>
-      <div class="cal-month" id="calMonth"></div>
-      <button class="btn btn-sm btn-icon" onclick="moveMonth(1)">›</button>
-    </div>
-    <div class="calendar-grid" id="calGrid"></div>
-  </div>
-  <div class="selected-date-label" id="selectedDateLabel"></div>
-  <div id="scheduleList"></div>
-</div>
-
-<!-- 설정 -->
-<div class="page" id="page-settings">
-  <div class="settings-section">
-    <div class="settings-title">🔥 Firebase 실시간 연동</div>
-    <div class="firebase-status disconnected" id="firebaseStatus">⚪ 연결 중...</div>
-  </div>
-  <div class="settings-section">
-    <div class="settings-title">🏥 장소 관리</div>
-    <div style="margin-bottom:10px">
-      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px">병원</div>
-      <div id="hospitalList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="newHospital" placeholder="병원 이름 추가" style="flex:1">
-        <button class="btn btn-sm btn-outline-red" onclick="addPlace('hospital')">추가</button>
-      </div>
-    </div>
-    <div class="divider"></div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px">대학</div>
-      <div id="univList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="newUniv" placeholder="대학 이름 추가" style="flex:1">
-        <button class="btn btn-sm btn-outline-blue" onclick="addPlace('univ')">추가</button>
-      </div>
-    </div>
-  </div>
-  <div class="settings-section">
-    <div class="settings-title">📦 재고 카테고리 관리</div>
-    <div id="catManageList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-    <div style="display:flex;gap:8px">
-      <input type="text" id="newCat" placeholder="카테고리 추가">
-      <button class="btn btn-sm btn-outline-red" onclick="addCategory()">추가</button>
-    </div>
-  </div>
-  <div class="settings-section">
-    <div class="settings-title">👤 내 정보</div>
+<!-- ── 로그인 화면 ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🔥</div>
+    <div class="login-title">소방업무공유</div>
+    <div class="login-sub">이름과 비밀번호를 입력해 주세요</div>
+    <div class="login-error" id="loginError">비밀번호가 올바르지 않습니다</div>
     <div class="form-group">
       <label class="form-label">이름</label>
-      <input type="text" id="settingsName" placeholder="이름을 입력해 주세요">
-    </div>
-    <button class="btn btn-red btn-sm" onclick="saveName()" style="width:100%;justify-content:center">저장</button>
-  </div>
-  <div class="settings-section">
-    <div class="settings-title">💾 데이터 관리</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-sm" onclick="exportData()">📤 백업</button>
-      <button class="btn btn-sm" onclick="importClick()">📥 복원</button>
-      <button class="btn btn-sm btn-outline-red" onclick="confirmReset()">⚠️ 초기화</button>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="doImport(event)">
-  </div>
-</div>
-
-<div class="bottom-nav">
-  <button class="nav-item active" data-page="inv" onclick="switchPage('inv')">
-    <span class="nav-icon">📦</span>재고관리
-  </button>
-  <button class="nav-item" data-page="journal" onclick="switchPage('journal')">
-    <span class="nav-icon">📝</span>업무일지
-  </button>
-  <button class="nav-item" data-page="schedule" onclick="switchPage('schedule')">
-    <span class="nav-icon">📅</span>일정
-  </button>
-  <button class="nav-item" data-page="settings" onclick="switchPage('settings')">
-    <span class="nav-icon">⚙️</span>설정
-  </button>
-</div>
-
-<button class="fab" id="fabBtn" onclick="fabAction()">＋</button>
-
-<!-- 모달: 이름 설정 -->
-<div class="modal-overlay" id="modal-setUser">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">👤 이름 설정</div>
-    <div class="form-group">
-      <input type="text" id="userNameInput" placeholder="이름을 입력해 주세요">
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('setUser')">취소</button>
-      <button class="btn btn-red" onclick="saveUserName()">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 모달: 품목 추가/수정 -->
-<div class="modal-overlay" id="modal-addItem">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="addItemTitle">품목 추가</div>
-    <input type="hidden" id="item_id">
-    <div class="form-group">
-      <label class="form-label">품목명 *</label>
-      <input type="text" id="item_name" placeholder="예: 소화기 (ABC형 3kg)">
-    </div>
-    <div class="input-row">
-      <div class="form-group">
-        <label class="form-label">카테고리</label>
-        <select id="item_cat"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">단위</label>
-        <input type="text" id="item_unit" placeholder="개, 본, 롤...">
-      </div>
-    </div>
-    <div class="input-row">
-      <div class="form-group">
-        <label class="form-label">현재 수량 *</label>
-        <input type="number" id="item_qty" placeholder="0" min="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">최소 수량 (부족 알림)</label>
-        <input type="number" id="item_min" placeholder="0" min="0">
-      </div>
+      <input type="text" id="loginName" placeholder="홍길동" maxlength="10">
     </div>
     <div class="form-group">
-      <label class="form-label">메모 (보관위치, 규격 등)</label>
-      <input type="text" id="item_memo" placeholder="3층 창고 A선반">
+      <label class="form-label">비밀번호</label>
+      <input type="password" id="loginPw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('addItem')">취소</button>
-      <button class="btn btn-red" onclick="saveItem()">저장</button>
-    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:4px">입장하기</button>
   </div>
 </div>
+
+<!-- ── 앱 본체 ── -->
+<div class="app" id="appWrap">
+  <div class="header">
+    <div class="logo">🔥 소방업무공유</div>
+    <div class="header-right">
+      <button class="dark-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
+      <div class="sync-dot" id="syncDot"></div>
+      <div class="user-badge" id="userBadge">👤</div>
+    </div>
+  </div>
+
+  <!-- 재고관리 -->
+  <div class="page active" id="page-inv">
+    <div class="inv-summary" id="invSummary"></div>
+    <div class="inv-search">
+      <input type="text" id="invSearch" placeholder="🔍 품목 검색..." oninput="renderInv()">
+      <button class="btn btn-sm btn-primary" onclick="openAddItem()">+ 추가</button>
+    </div>
+    <div id="invList"></div>
+  </div>
+
+  <!-- 업무일지 -->
+  <div class="page" id="page-journal">
+    <div class="filter-tabs" id="placeTabs"></div>
+    <div id="journalList"></div>
+  </div>
+
+  <!-- 일정 -->
+  <div class="page" id="page-schedule">
+    <div class="card" style="padding:12px">
+      <div class="calendar-header">
+        <button class="btn btn-sm" onclick="moveMonth(-1)">‹</button>
+        <div class="cal-month" id="calMonth"></div>
+        <button class="btn btn-sm" onclick="moveMonth(1)">›</button>
+      </div>
+      <div class="calendar-grid" id="calGrid"></div>
+    </div>
+    <div class="selected-date-label" id="selectedDateLabel"></div>
+    <div id="scheduleList"></div>
+  </div>
+
+  <!-- 메모 -->
+  <div class="page" id="page-memo">
+    <div class="filter-tabs" id="memoFilter"></div>
+    <div class="toolbar"><div class="toolbar-right">
+      <button class="btn btn-primary btn-sm" onclick="openAddMemo()">+ 메모 추가</button>
+    </div></div>
+    <div id="memoList"></div>
+  </div>
+
+  <!-- 설정 -->
+  <div class="page" id="page-settings">
+    <div class="settings-section">
+      <div class="settings-title">🔥 Firebase 연동 상태</div>
+      <div class="firebase-status disconnected" id="firebaseStatus">⚪ 연결 중...</div>
+    </div>
+
+    <!-- 관리자 전용 -->
+    <div id="adminPanel">
+      <div class="settings-section">
+        <div class="settings-title">🔐 보안 설정 <span class="badge b-amber">관리자</span></div>
+        <div class="form-group">
+          <label class="form-label">일반 비밀번호 변경</label>
+          <input type="password" id="newUserPw" placeholder="새 비밀번호 입력">
+        </div>
+        <div class="form-group">
+          <label class="form-label">관리자 비밀번호 변경</label>
+          <input type="password" id="newAdminPw" placeholder="새 관리자 비밀번호 입력">
+        </div>
+        <button class="btn btn-primary btn-sm btn-block" onclick="savePwSettings()">비밀번호 저장</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">👥 팀원 관리 <span class="badge b-amber">관리자</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">팀원별로 보이는 탭을 설정할 수 있어요</div>
+        <div id="memberList"></div>
+        <button class="btn btn-outline-primary btn-sm btn-block" style="margin-top:8px" onclick="openModal('addMember')">+ 팀원 추가</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">🏥 장소 관리</div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px">병원</div>
+          <div id="hospitalList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="newHospital" placeholder="병원 추가" style="flex:1">
+            <button class="btn btn-sm btn-outline-red" onclick="addPlace('hospital')">추가</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px">대학</div>
+          <div id="univList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="newUniv" placeholder="대학 추가" style="flex:1">
+            <button class="btn btn-sm btn-outline-primary" onclick="addPlace('univ')">추가</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">📦 재고 카테고리</div>
+        <div id="catManageList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newCat" placeholder="카테고리 추가">
+          <button class="btn btn-sm btn-outline-primary" onclick="addCategory()">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">🎨 화면 설정</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0">
+        <span style="font-size:13px;color:var(--text2)">다크모드</span>
+        <button class="btn btn-sm" id="darkSettingsBtn" onclick="toggleDark()">🌙 켜기</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">💾 데이터 관리</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="exportData()">📤 백업</button>
+        <button class="btn btn-sm" onclick="importClick()">📥 복원</button>
+        <button class="btn btn-sm btn-outline-red" onclick="doLogout()">🚪 로그아웃</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="doImport(event)">
+    </div>
+  </div>
+
+  <div class="bottom-nav" id="bottomNav"></div>
+  <button class="fab" id="fabBtn" onclick="fabAction()">＋</button>
+</div><!-- /app -->
+
+<!-- 모달: 품목 -->
+<div class="modal-overlay" id="modal-addItem"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="addItemTitle">품목 추가</div>
+  <input type="hidden" id="item_id">
+  <div class="form-group"><label class="form-label">카테고리 *</label><select id="item_cat"></select></div>
+  <div class="form-group"><label class="form-label">품목명 *</label><input type="text" id="item_name" placeholder="예: ABC형 소화기 3kg"></div>
+  <div class="input-row">
+    <div class="form-group"><label class="form-label">단위</label><input type="text" id="item_unit" placeholder="개, 본..."></div>
+    <div class="form-group"><label class="form-label">현재 수량 *</label><input type="number" id="item_qty" placeholder="0" min="0"></div>
+  </div>
+  <div class="form-group"><label class="form-label">최소 수량 (알림)</label><input type="number" id="item_min" placeholder="0" min="0"></div>
+  <div class="form-group"><label class="form-label">메모</label><input type="text" id="item_memo" placeholder="보관위치 등"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addItem')">취소</button>
+    <button class="btn btn-primary" onclick="saveItem()">저장</button>
+  </div>
+</div></div>
 
 <!-- 모달: 입출고 -->
-<div class="modal-overlay" id="modal-txn">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="txnTitle">입출고</div>
-    <input type="hidden" id="txn_itemId">
-    <div class="form-group">
-      <label class="form-label">구분</label>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline-green" id="txnInBtn" onclick="setTxnType('in')" style="flex:1;justify-content:center">📥 입고</button>
-        <button class="btn btn-outline-red" id="txnOutBtn" onclick="setTxnType('out')" style="flex:1;justify-content:center">📤 출고</button>
-      </div>
-      <input type="hidden" id="txn_type">
+<div class="modal-overlay" id="modal-txn"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="txnTitle">입출고</div>
+  <input type="hidden" id="txn_itemId">
+  <div class="form-group">
+    <label class="form-label">구분</label>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline-green" id="txnInBtn" onclick="setTxnType('in')" style="flex:1">📥 입고</button>
+      <button class="btn btn-outline-red" id="txnOutBtn" onclick="setTxnType('out')" style="flex:1">📤 출고</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">수량 *</label>
-      <input type="number" id="txn_qty" placeholder="수량 입력" min="1">
-    </div>
-    <div class="form-group">
-      <label class="form-label">메모</label>
-      <input type="text" id="txn_memo" placeholder="사유, 담당자 등">
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('txn')">취소</button>
-      <button class="btn btn-red" onclick="saveTxn()">저장</button>
-    </div>
+    <input type="hidden" id="txn_type">
   </div>
-</div>
+  <div class="form-group"><label class="form-label">수량 *</label><input type="number" id="txn_qty" placeholder="수량 입력" min="1"></div>
+  <div class="form-group"><label class="form-label">메모</label><input type="text" id="txn_memo" placeholder="사유, 담당자 등"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('txn')">취소</button>
+    <button class="btn btn-primary" onclick="saveTxn()">저장</button>
+  </div>
+</div></div>
 
 <!-- 모달: 업무일지 -->
-<div class="modal-overlay" id="modal-addJournal">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="addJrnTitle">업무일지 작성</div>
-    <input type="hidden" id="jrn_id">
-    <div class="form-group">
-      <label class="form-label">날짜 *</label>
-      <input type="date" id="jrn_date">
+<div class="modal-overlay" id="modal-addJournal"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="addJrnTitle">업무일지 작성</div>
+  <input type="hidden" id="jrn_id">
+  <div class="form-group"><label class="form-label">날짜 *</label><input type="date" id="jrn_date"></div>
+  <div class="form-group">
+    <label class="form-label">장소 유형 *</label>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn" id="jrnTypeHosp" onclick="setJrnType('hospital')" style="flex:1">🏥 병원</button>
+      <button class="btn" id="jrnTypeUniv" onclick="setJrnType('univ')" style="flex:1">🎓 대학</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">장소 *</label>
-      <select id="jrn_place"></select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">업무 내용 *</label>
-      <textarea id="jrn_content" placeholder="오늘 진행한 업무를 자유롭게 기록해 주세요..."></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('addJournal')">취소</button>
-      <button class="btn btn-red" onclick="saveJournal()">저장</button>
-    </div>
+    <input type="hidden" id="jrn_type">
   </div>
-</div>
+  <div class="form-group"><label class="form-label">장소 선택 *</label><select id="jrn_place"></select></div>
+  <div class="form-group"><label class="form-label">업무 내용 *</label><textarea id="jrn_content" placeholder="오늘 진행한 업무를 자유롭게 기록해 주세요..."></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addJournal')">취소</button>
+    <button class="btn btn-primary" onclick="saveJournal()">저장</button>
+  </div>
+</div></div>
 
-<!-- 모달: 일정 추가 -->
-<div class="modal-overlay" id="modal-addSchedule">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="addSchTitle">일정 추가</div>
-    <input type="hidden" id="sch_id">
-    <div class="form-group">
-      <label class="form-label">제목 *</label>
-      <input type="text" id="sch_title" placeholder="일정 제목">
-    </div>
-    <div class="input-row">
-      <div class="form-group">
-        <label class="form-label">날짜 *</label>
-        <input type="date" id="sch_date">
-      </div>
-      <div class="form-group">
-        <label class="form-label">시간</label>
-        <input type="time" id="sch_time">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">분류</label>
-      <select id="sch_cat">
-        <option value="점검">🔍 점검</option>
-        <option value="교육">📚 교육</option>
-        <option value="회의">💬 회의</option>
-        <option value="공사">🏗️ 공사</option>
-        <option value="기타">📌 기타</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">메모</label>
-      <textarea id="sch_memo" placeholder="상세 내용, 준비사항 등..." style="min-height:60px"></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('addSchedule')">취소</button>
-      <button class="btn btn-red" onclick="saveSchedule()">저장</button>
-    </div>
+<!-- 모달: 일정 -->
+<div class="modal-overlay" id="modal-addSchedule"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="addSchTitle">일정 추가</div>
+  <input type="hidden" id="sch_id">
+  <div class="form-group"><label class="form-label">제목 *</label><input type="text" id="sch_title" placeholder="일정 제목"></div>
+  <div class="input-row">
+    <div class="form-group"><label class="form-label">날짜 *</label><input type="date" id="sch_date"></div>
+    <div class="form-group"><label class="form-label">시간</label><input type="time" id="sch_time"></div>
   </div>
-</div>
+  <div class="form-group"><label class="form-label">분류</label>
+    <select id="sch_cat">
+      <option value="점검">🔍 점검</option><option value="교육">📚 교육</option>
+      <option value="회의">💬 회의</option><option value="공사">🏗️ 공사</option><option value="기타">📌 기타</option>
+    </select>
+  </div>
+  <div class="form-group"><label class="form-label">메모</label><textarea id="sch_memo" placeholder="상세 내용..." style="min-height:60px"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addSchedule')">취소</button>
+    <button class="btn btn-primary" onclick="saveSchedule()">저장</button>
+  </div>
+</div></div>
+
+<!-- 모달: 메모 -->
+<div class="modal-overlay" id="modal-addMemo"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="addMemoTitle">메모 추가</div>
+  <input type="hidden" id="memo_id">
+  <div class="form-group"><label class="form-label">제목 *</label><input type="text" id="memo_title" placeholder="메모 제목"></div>
+  <div class="form-group"><label class="form-label">분류</label>
+    <select id="memo_cat">
+      <option value="일반">📌 일반</option><option value="중요">⭐ 중요</option>
+      <option value="업무">💼 업무</option><option value="점검">🔍 점검</option>
+    </select>
+  </div>
+  <div class="form-group"><label class="form-label">내용 *</label><textarea id="memo_content" placeholder="메모 내용..." style="min-height:120px"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addMemo')">취소</button>
+    <button class="btn btn-primary" onclick="saveMemo()">저장</button>
+  </div>
+</div></div>
+
+<!-- 모달: 팀원 추가 -->
+<div class="modal-overlay" id="modal-addMember"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title">👤 팀원 추가</div>
+  <input type="hidden" id="mbr_id">
+  <div class="form-group"><label class="form-label">팀원 이름 *</label><input type="text" id="mbr_name" placeholder="홍길동"></div>
+  <div class="form-group">
+    <label class="form-label">보이는 탭 설정</label>
+    <div class="tab-toggle-group" id="mbrTabToggles"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addMember')">취소</button>
+    <button class="btn btn-primary" onclick="saveMember()">저장</button>
+  </div>
+</div></div>
 
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-let curPage='inv',curCat='전체',curJF='전체';
+// ── Firebase ──
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyCL37JohDOJ0fbCVrhGHys_7jEEO8zfE2U",
+  authDomain:"fire-safety-6ba08.firebaseapp.com",
+  databaseURL:"https://fire-safety-6ba08-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"fire-safety-6ba08",
+  storageBucket:"fire-safety-6ba08.firebasestorage.app",
+  messagingSenderId:"585109331074",
+  appId:"1:585109331074:web:b1a5764ca868196684689b"
+};
+
+// ── 기본값 ──
+const DEFAULT_USER_PW  = 'fire1234';   // 일반 비밀번호
+const DEFAULT_ADMIN_PW = 'admin9999';  // 관리자 비밀번호
+const ALL_TABS = [
+  {id:'inv',label:'📦 재고'},
+  {id:'journal',label:'📝 업무일지'},
+  {id:'schedule',label:'📅 일정'},
+  {id:'memo',label:'🗒️ 메모'},
+  {id:'settings',label:'⚙️ 설정'}
+];
+
+// ── 상태 ──
+let curPage='inv',curJF='전체',curMemoF='전체',curJrnType='hospital';
 let calYear,calMonth,selDate;
-let db={items:[],txns:[],journals:[],schedules:[],
+let openCats={};
+let db={
+  items:[],txns:[],journals:[],schedules:[],memos:[],members:[],
   categories:['소화기류','호스·관창','감지기','밸브류','기타'],
   hospitals:['원주세브란스병원','원주기독병원'],
-  univs:['연세대학교 미래캠퍼스','상지대학교']};
-let userName='';
-let firebaseRef=null;
-
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCL37JohDOJ0fbCVrhGHys_7jEEO8zfE2U",
-  authDomain: "fire-safety-6ba08.firebaseapp.com",
-  databaseURL: "https://fire-safety-6ba08-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "fire-safety-6ba08",
-  storageBucket: "fire-safety-6ba08.firebasestorage.app",
-  messagingSenderId: "585109331074",
-  appId: "1:585109331074:web:b1a5764ca868196684689b"
+  univs:['연세대학교 미래캠퍼스','상지대학교'],
+  userPw:DEFAULT_USER_PW,
+  adminPw:DEFAULT_ADMIN_PW
 };
+let userName='',isAdmin=false,myTabs=[],isDark=false,firebaseRef=null;
+let mbrTabState={};
 
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const tod=()=>new Date().toISOString().slice(0,10);
 const getW=()=>userName||'익명';
+const catEmoji={'소화기류':'🧯','호스·관창':'🚿','감지기':'📡','밸브류':'🔧','기타':'📦'};
 
-function init(){
-  const now=new Date();
-  calYear=now.getFullYear();calMonth=now.getMonth();selDate=tod();
-  try{const d=localStorage.getItem('fb_db');if(d)db=Object.assign(db,JSON.parse(d));}catch{}
-  userName=localStorage.getItem('fb_user')||'';
-  updateUserBadge();
+// ── 로그인 ──
+function doLogin(){
+  const name=document.getElementById('loginName').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  const err=document.getElementById('loginError');
+  if(!name){err.textContent='이름을 입력해 주세요';err.style.display='block';return;}
+  if(pw===db.adminPw||pw===DEFAULT_ADMIN_PW){
+    isAdmin=true; userName=name;
+    myTabs=ALL_TABS.map(t=>t.id);
+    enterApp();
+  } else if(pw===db.userPw||pw===DEFAULT_USER_PW){
+    isAdmin=false; userName=name;
+    const member=db.members.find(m=>m.name===name);
+    myTabs=member?member.tabs:['inv','journal','schedule','memo'];
+    enterApp();
+  } else {
+    err.textContent='비밀번호가 올바르지 않습니다';err.style.display='block';
+    document.getElementById('loginPw').value='';
+  }
+}
+function enterApp(){
+  localStorage.setItem('fb_user',userName);
+  localStorage.setItem('fb_isAdmin',isAdmin?'1':'0');
+  localStorage.setItem('fb_myTabs',JSON.stringify(myTabs));
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appWrap').classList.add('visible');
+  document.getElementById('userBadge').innerHTML=(isAdmin?'👑 ':'👤 ')+userName;
+  document.getElementById('adminPanel').style.display=isAdmin?'block':'none';
+  buildNav();
+  renderAll();
   initFirebase(FIREBASE_CONFIG);
-  renderInv();renderJournal();renderCalendar();renderScheduleList();renderSettings();
 }
-function saveLocal(){localStorage.setItem('fb_db',JSON.stringify(db));if(firebaseRef)pushFB();}
-function updateUserBadge(){document.getElementById('userBadge').textContent='👤 '+(userName||'나');}
+function doLogout(){
+  if(!confirm('로그아웃 하시겠습니까?'))return;
+  localStorage.removeItem('fb_user');localStorage.removeItem('fb_isAdmin');localStorage.removeItem('fb_myTabs');
+  location.reload();
+}
+function tryAutoLogin(){
+  const n=localStorage.getItem('fb_user');
+  const a=localStorage.getItem('fb_isAdmin')==='1';
+  const t=localStorage.getItem('fb_myTabs');
+  if(n&&t){
+    userName=n;isAdmin=a;myTabs=JSON.parse(t);
+    enterApp();return true;
+  }
+  return false;
+}
 
-/* Firebase */
-function connectFirebase(){
-  const raw=document.getElementById('fbConfigInput').value.trim();
-  try{
-    const m=raw.match(/\{[\s\S]*\}/);if(!m)throw 0;
-    const cfg=eval('('+m[0]+')');
-    if(!cfg.databaseURL)throw new Error('databaseURL 없음');
-    localStorage.setItem('fb_cfg',JSON.stringify(cfg));
-    initFirebase(cfg);
-  }catch(e){toast('firebaseConfig 형식을 확인해 주세요 (databaseURL 필수)','error');}
+// ── 네비 빌드 ──
+function buildNav(){
+  const tabs=isAdmin?ALL_TABS:ALL_TABS.filter(t=>myTabs.includes(t.id));
+  document.getElementById('bottomNav').innerHTML=tabs.map(t=>
+    `<button class="nav-item${t.id===curPage?' active':''}" data-page="${t.id}" onclick="switchPage('${t.id}')">
+      <span class="nav-icon">${t.label.split(' ')[0]}</span>${t.label.split(' ')[1]}
+    </button>`).join('');
+  // 현재 페이지가 접근 불가면 첫 탭으로
+  if(!isAdmin&&!myTabs.includes(curPage)){
+    curPage=myTabs[0]||'inv';
+  }
 }
+
+// ── 다크모드 ──
+function toggleDark(){
+  isDark=!isDark;document.body.classList.toggle('dark',isDark);
+  localStorage.setItem('fb_dark',isDark?'1':'0');updateDarkUI();
+}
+function updateDarkUI(){
+  document.getElementById('darkBtn').textContent=isDark?'☀️':'🌙';
+  const sb=document.getElementById('darkSettingsBtn');
+  if(sb)sb.textContent=isDark?'☀️ 라이트 켜기':'🌙 다크 켜기';
+}
+
+// ── Firebase ──
 function initFirebase(cfg){
   if(typeof firebase==='undefined'){
     let n=0;
@@ -474,226 +617,286 @@ function setupFB(cfg){
     firebaseRef=firebase.database().ref('sobangtm');
     firebaseRef.on('value',snap=>{
       const d=snap.val();
-      if(d){db=Object.assign(db,d);localStorage.setItem('fb_db',JSON.stringify(db));renderCurrent();}
+      if(d){
+        db=Object.assign(db,d);
+        localStorage.setItem('fb_db',JSON.stringify(db));
+        renderAll();
+      }
       setSyncStatus('ok');
-      document.getElementById('firebaseStatus').className='firebase-status connected';
-      document.getElementById('firebaseStatus').textContent='🟢 Firebase 연결됨 — 실시간 동기화 중';
+      const el=document.getElementById('firebaseStatus');
+      el.className='firebase-status connected';el.textContent='🟢 실시간 동기화 중';
     });
-    toast('Firebase 연결됐습니다! 실시간 동기화 시작','success');
-  }catch(e){toast('Firebase 오류: '+e.message,'error');setSyncStatus('error');}
+  }catch(e){setSyncStatus('error');}
 }
-function pushFB(){
-  if(!firebaseRef)return;setSyncStatus('syncing');
-  firebaseRef.set(db).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('error'));
+function saveLocal(){
+  localStorage.setItem('fb_db',JSON.stringify(db));
+  if(firebaseRef){setSyncStatus('syncing');firebaseRef.set(db).then(()=>setSyncStatus('ok')).catch(()=>setSyncStatus('error'));}
 }
-function setSyncStatus(s){
-  document.getElementById('syncDot').className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');
-}
+function setSyncStatus(s){document.getElementById('syncDot').className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');}
 
-/* 페이지 */
+// ── 페이지 ──
 function switchPage(p){
+  if(!isAdmin&&!myTabs.includes(p)){toast('접근 권한이 없습니다','error');return;}
   curPage=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
-  document.getElementById('fabBtn').style.display=p==='settings'?'none':'flex';
+  const hideFab=['settings'];
+  document.getElementById('fabBtn').style.display=hideFab.includes(p)?'none':'flex';
   renderCurrent();
+}
+function renderAll(){
+  renderInv();renderJournal();renderCalendar();renderScheduleList();renderMemo();renderSettings();
 }
 function renderCurrent(){
   if(curPage==='inv')renderInv();
   if(curPage==='journal')renderJournal();
   if(curPage==='schedule'){renderCalendar();renderScheduleList();}
+  if(curPage==='memo')renderMemo();
   if(curPage==='settings')renderSettings();
 }
 function fabAction(){
   if(curPage==='inv')openAddItem();
   if(curPage==='journal')openAddJournal();
   if(curPage==='schedule')openAddSchedule();
+  if(curPage==='memo')openAddMemo();
 }
 
-/* ── 재고관리 ── */
+// ── 팀원 관리 ──
+function renderMemberList(){
+  const el=document.getElementById('memberList');if(!el)return;
+  if(!db.members||!db.members.length){el.innerHTML='<div style="font-size:13px;color:var(--text3);text-align:center;padding:12px">등록된 팀원이 없어요</div>';return;}
+  el.innerHTML=db.members.map(m=>`
+    <div class="member-item">
+      <div style="flex:1;min-width:0">
+        <div class="member-name">👤 ${m.name}</div>
+        <div class="tab-toggle-group" style="margin-top:6px">
+          ${ALL_TABS.filter(t=>t.id!=='settings').map(t=>`
+            <span class="tab-toggle${(m.tabs||[]).includes(t.id)?' on':''}" onclick="toggleMemberTab('${m.id}','${t.id}')">${t.label}</span>
+          `).join('')}
+        </div>
+      </div>
+      <button class="btn btn-xs btn-outline-red" onclick="deleteMember('${m.id}')">삭제</button>
+    </div>`).join('');
+}
+function toggleMemberTab(memberId,tabId){
+  const m=db.members.find(x=>x.id===memberId);if(!m)return;
+  m.tabs=m.tabs||[];
+  if(m.tabs.includes(tabId))m.tabs=m.tabs.filter(t=>t!==tabId);
+  else m.tabs.push(tabId);
+  saveLocal();renderMemberList();toast('권한 변경됐습니다','success');
+}
+function openAddMember(){
+  document.getElementById('mbr_id').value='';
+  document.getElementById('mbr_name').value='';
+  mbrTabState={inv:true,journal:true,schedule:true,memo:true};
+  renderMbrTabToggles();
+  openModal('addMember');
+}
+function renderMbrTabToggles(){
+  document.getElementById('mbrTabToggles').innerHTML=ALL_TABS.filter(t=>t.id!=='settings').map(t=>`
+    <span class="tab-toggle${mbrTabState[t.id]?' on':''}" onclick="toggleMbrTab('${t.id}')">${t.label}</span>
+  `).join('');
+}
+function toggleMbrTab(tabId){
+  mbrTabState[tabId]=!mbrTabState[tabId];renderMbrTabToggles();
+}
+function saveMember(){
+  const name=document.getElementById('mbr_name').value.trim();
+  if(!name){toast('이름을 입력해 주세요','error');return;}
+  const tabs=Object.entries(mbrTabState).filter(([,v])=>v).map(([k])=>k);
+  db.members=db.members||[];
+  db.members.push({id:uid(),name,tabs});
+  saveLocal();closeModal('addMember');renderMemberList();toast(name+'님 추가됐습니다','success');
+}
+function deleteMember(id){
+  if(!confirm('팀원을 삭제하시겠습니까?'))return;
+  db.members=db.members.filter(x=>x.id!==id);
+  saveLocal();renderMemberList();toast('삭제됐습니다');
+}
+function savePwSettings(){
+  const newU=document.getElementById('newUserPw').value.trim();
+  const newA=document.getElementById('newAdminPw').value.trim();
+  if(newU)db.userPw=newU;
+  if(newA)db.adminPw=newA;
+  if(!newU&&!newA){toast('변경할 비밀번호를 입력해 주세요','error');return;}
+  saveLocal();
+  document.getElementById('newUserPw').value='';document.getElementById('newAdminPw').value='';
+  toast('비밀번호가 변경됐습니다','success');
+}
+
+// ── 재고 (계층) ──
 function renderInv(){
-  const cats=['전체',...db.categories];
-  document.getElementById('catTabs').innerHTML=cats.map(c=>
-    `<button class="cat-tab${c===curCat?' active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
   const q=document.getElementById('invSearch').value.trim().toLowerCase();
-  let items=db.items.filter(it=>{
-    if(curCat!=='전체'&&it.cat!==curCat)return false;
-    if(q&&!it.name.toLowerCase().includes(q))return false;
-    return true;
-  });
-  const total=db.items.length;
-  const low=db.items.filter(it=>it.min>0&&it.qty<=it.min).length;
+  const total=db.items.length,low=db.items.filter(it=>it.min>0&&it.qty<=it.min).length;
   document.getElementById('invSummary').innerHTML=`
-    <div class="inv-stat"><div class="inv-stat-num" style="color:var(--blue)">${total}</div><div class="inv-stat-label">전체 품목</div></div>
+    <div class="inv-stat"><div class="inv-stat-num" style="color:var(--primary)">${total}</div><div class="inv-stat-label">전체 품목</div></div>
     <div class="inv-stat"><div class="inv-stat-num" style="color:var(--red)">${low}</div><div class="inv-stat-label">부족 품목</div></div>
     <div class="inv-stat"><div class="inv-stat-num" style="color:var(--green)">${total-low}</div><div class="inv-stat-label">정상 품목</div></div>`;
-  if(!items.length){
-    document.getElementById('invList').innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">등록된 품목이 없어요<br>+ 버튼으로 추가해 주세요</div></div>';return;
+  if(q){
+    const filtered=db.items.filter(it=>it.name.toLowerCase().includes(q)||(it.cat&&it.cat.toLowerCase().includes(q))||(it.memo&&it.memo.toLowerCase().includes(q)));
+    document.getElementById('invList').innerHTML=filtered.length?filtered.map(it=>itemCardHTML(it)).join(''):'<div class="empty"><div class="empty-icon">🔍</div><div>검색 결과가 없어요</div></div>';
+    return;
   }
-  items.sort((a,b)=>{
-    const al=a.min>0&&a.qty<=a.min?0:1,bl=b.min>0&&b.qty<=b.min?0:1;
-    return al!==bl?al-bl:a.name.localeCompare(b.name);
-  });
-  document.getElementById('invList').innerHTML=items.map(it=>{
-    const isLow=it.min>0&&it.qty<=it.min;
-    const logs=(db.txns||[]).filter(t=>t.itemId===it.id).slice(-3).reverse();
-    return `<div class="item-card ${isLow?'low':'ok'}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div style="flex:1;min-width:0">
-          <div class="item-name">${it.name}</div>
-          <div class="item-category">${it.cat||''}${it.memo?' · '+it.memo:''}</div>
+  const cats=db.categories;
+  document.getElementById('invList').innerHTML=cats.map(cat=>{
+    const items=db.items.filter(it=>it.cat===cat);
+    const lowCnt=items.filter(it=>it.min>0&&it.qty<=it.min).length;
+    const isOpen=openCats[cat]||false;
+    const totalQty=items.reduce((s,it)=>s+it.qty,0);
+    const unit=items[0]?.unit||'개';
+    return `<div class="cat-group">
+      <div class="cat-group-head${isOpen?' open':''}" onclick="toggleCat('${cat}')">
+        <div class="cat-group-left">
+          <div class="cat-group-icon">${catEmoji[cat]||'📦'}</div>
+          <div>
+            <div class="cat-group-name">${cat}</div>
+            <div class="cat-group-count">품목 ${items.length}개 · 총 ${totalQty}${unit}${lowCnt>0?` · <span style="color:var(--red)">⚠ 부족 ${lowCnt}개</span>`:''}</div>
+          </div>
         </div>
-        <div style="display:flex;gap:5px;flex-shrink:0">
-          <button class="btn btn-xs btn-outline-blue" onclick="openTxn('${it.id}')">입출고</button>
-          <button class="btn btn-xs" onclick="openEditItem('${it.id}')">수정</button>
-          <button class="btn btn-xs btn-outline-red" onclick="deleteItem('${it.id}')">삭제</button>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${lowCnt>0?`<span class="badge b-red">부족</span>`:''}
+          <span class="cat-arrow${isOpen?' open':''}">▶</span>
         </div>
       </div>
-      <div class="item-qty-wrap">
-        <button class="qty-btn" onclick="quickQty('${it.id}',-1)" style="color:var(--red)">−</button>
-        <div style="text-align:center">
-          <div class="qty-display${isLow?' low':''}">${it.qty}</div>
-          <div class="qty-unit">${it.unit||'개'}</div>
-        </div>
-        <button class="qty-btn" onclick="quickQty('${it.id}',1)" style="color:var(--green)">＋</button>
-        ${it.min>0?`<span class="badge ${isLow?'b-red':'b-green'}">${isLow?'⚠ 부족':'✓ 충분'}</span>`:''}
+      <div class="cat-group-body${isOpen?' open':''}" id="catbody-${cat.replace(/[^a-zA-Z0-9가-힣]/g,'_')}">
+        ${items.length?items.map(it=>itemCardHTML(it)).join(''):`<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">등록된 품목이 없어요</div>`}
       </div>
-      ${it.min>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">최소 기준: ${it.min} ${it.unit||'개'}</div>`:''}
-      ${logs.length?`<button class="btn btn-xs" style="margin-top:8px;color:var(--text3);border:none;padding:4px 0" onclick="toggleLog('${it.id}')">📋 최근 입출고 내역</button>
-        <div class="log-list" id="log-${it.id}">
-          ${logs.map(t=>`<div class="log-row">
-            <span class="badge ${t.type==='in'?'b-green':'b-red'}">${t.type==='in'?'입고':'출고'}</span>
-            <span style="font-weight:600">${t.type==='in'?'+':'-'}${t.qty} ${it.unit||'개'}</span>
-            <span style="color:var(--text3);flex:1;text-align:center">${t.memo||''}</span>
-            <span style="color:var(--text3)">${t.date||''} ${t.by||''}</span>
-          </div>`).join('')}
-        </div>`:''}
     </div>`;
   }).join('');
 }
-function setCat(c){curCat=c;renderInv();}
+function toggleCat(cat){openCats[cat]=!openCats[cat];renderInv();}
+function itemCardHTML(it){
+  const isLow=it.min>0&&it.qty<=it.min;
+  const logs=(db.txns||[]).filter(t=>t.itemId===it.id).slice(-3).reverse();
+  return `<div class="item-card ${isLow?'low':'ok'}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div class="item-name">${it.name}</div>
+        <div class="item-sub">${it.cat||''}${it.memo?' · '+it.memo:''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="btn btn-xs btn-outline-primary" onclick="openTxn('${it.id}')">입출고</button>
+        <button class="btn btn-xs" onclick="openEditItem('${it.id}')">수정</button>
+        <button class="btn btn-xs btn-outline-red" onclick="deleteItem('${it.id}')">삭제</button>
+      </div>
+    </div>
+    <div class="item-qty-wrap">
+      <button class="qty-btn" onclick="quickQty('${it.id}',-1)" style="color:var(--red)">−</button>
+      <div style="text-align:center">
+        <div class="qty-display${isLow?' low':''}">${it.qty}</div>
+        <div class="qty-unit">${it.unit||'개'}</div>
+      </div>
+      <button class="qty-btn" onclick="quickQty('${it.id}',1)" style="color:var(--green)">＋</button>
+      ${it.min>0?`<span class="badge ${isLow?'b-red':'b-green'}">${isLow?'⚠ 부족':'✓ 충분'}</span>`:''}
+    </div>
+    ${it.min>0?`<div style="font-size:11px;color:var(--text3);margin-top:4px">최소 기준: ${it.min} ${it.unit||'개'}</div>`:''}
+    ${logs.length?`<button class="btn btn-xs" style="margin-top:8px;color:var(--text3);border:none;background:none;padding:4px 0" onclick="toggleLog('${it.id}')">📋 최근 입출고 내역</button>
+      <div class="log-list" id="log-${it.id}">
+        ${logs.map(t=>`<div class="log-row">
+          <span class="badge ${t.type==='in'?'b-green':'b-red'}">${t.type==='in'?'입고':'출고'}</span>
+          <span style="font-weight:600">${t.type==='in'?'+':'-'}${t.qty}${it.unit||'개'}</span>
+          <span style="color:var(--text3);flex:1">${t.memo||''}</span>
+          <span style="color:var(--text3)">${t.date||''}</span>
+        </div>`).join('')}
+      </div>`:''}
+  </div>`;
+}
 function toggleLog(id){const el=document.getElementById('log-'+id);if(el)el.classList.toggle('open');}
 function openAddItem(){
-  document.getElementById('item_id').value='';
-  document.getElementById('addItemTitle').textContent='품목 추가';
+  document.getElementById('item_id').value='';document.getElementById('addItemTitle').textContent='품목 추가';
   ['item_name','item_qty','item_min','item_unit','item_memo'].forEach(id=>document.getElementById(id).value='');
   renderItemCatSel();openModal('addItem');
 }
 function openEditItem(id){
   const it=db.items.find(x=>x.id===id);if(!it)return;
-  document.getElementById('item_id').value=id;
-  document.getElementById('addItemTitle').textContent='품목 수정';
-  document.getElementById('item_name').value=it.name;
-  document.getElementById('item_qty').value=it.qty;
-  document.getElementById('item_min').value=it.min||'';
-  document.getElementById('item_unit').value=it.unit||'';
-  document.getElementById('item_memo').value=it.memo||'';
-  renderItemCatSel(it.cat);openModal('addItem');
+  document.getElementById('item_id').value=id;document.getElementById('addItemTitle').textContent='품목 수정';
+  document.getElementById('item_name').value=it.name;document.getElementById('item_qty').value=it.qty;
+  document.getElementById('item_min').value=it.min||'';document.getElementById('item_unit').value=it.unit||'';
+  document.getElementById('item_memo').value=it.memo||'';renderItemCatSel(it.cat);openModal('addItem');
 }
-function renderItemCatSel(cur){
-  document.getElementById('item_cat').innerHTML=db.categories.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
-}
+function renderItemCatSel(cur){document.getElementById('item_cat').innerHTML=db.categories.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');}
 function saveItem(){
-  const id=document.getElementById('item_id').value;
-  const name=document.getElementById('item_name').value.trim();
-  const qty=parseInt(document.getElementById('item_qty').value)||0;
-  const min=parseInt(document.getElementById('item_min').value)||0;
-  const unit=document.getElementById('item_unit').value.trim()||'개';
-  const memo=document.getElementById('item_memo').value.trim();
+  const id=document.getElementById('item_id').value,name=document.getElementById('item_name').value.trim();
+  const qty=parseInt(document.getElementById('item_qty').value)||0,min=parseInt(document.getElementById('item_min').value)||0;
+  const unit=document.getElementById('item_unit').value.trim()||'개',memo=document.getElementById('item_memo').value.trim();
   const cat=document.getElementById('item_cat').value;
   if(!name){toast('품목명을 입력해 주세요','error');return;}
   if(id){const it=db.items.find(x=>x.id===id);if(it)Object.assign(it,{name,qty,min,unit,memo,cat});}
-  else db.items.push({id:uid(),name,qty,min,unit,memo,cat,createdAt:tod(),by:getW()});
+  else{db.items.push({id:uid(),name,qty,min,unit,memo,cat,createdAt:tod(),by:getW()});openCats[cat]=true;}
   saveLocal();closeModal('addItem');renderInv();toast(id?'수정됐습니다':'추가됐습니다','success');
 }
-function deleteItem(id){
-  if(!confirm('삭제하시겠습니까?'))return;
-  db.items=db.items.filter(x=>x.id!==id);
-  db.txns=(db.txns||[]).filter(x=>x.itemId!==id);
-  saveLocal();renderInv();toast('삭제됐습니다');
-}
+function deleteItem(id){if(!confirm('삭제하시겠습니까?'))return;db.items=db.items.filter(x=>x.id!==id);db.txns=(db.txns||[]).filter(x=>x.itemId!==id);saveLocal();renderInv();toast('삭제됐습니다');}
 function quickQty(id,d){
   const it=db.items.find(x=>x.id===id);if(!it)return;
   it.qty=Math.max(0,it.qty+d);
-  db.txns=db.txns||[];
-  db.txns.push({id:uid(),itemId:id,type:d>0?'in':'out',qty:Math.abs(d),memo:'빠른조정',date:tod(),by:getW()});
+  db.txns=db.txns||[];db.txns.push({id:uid(),itemId:id,type:d>0?'in':'out',qty:Math.abs(d),memo:'빠른조정',date:tod(),by:getW()});
   saveLocal();renderInv();
 }
 function openTxn(id){
   const it=db.items.find(x=>x.id===id);if(!it)return;
-  document.getElementById('txn_itemId').value=id;
-  document.getElementById('txnTitle').textContent=it.name+' 입출고';
-  document.getElementById('txn_qty').value='';
-  document.getElementById('txn_memo').value='';
-  document.getElementById('txn_type').value='';
-  document.getElementById('txnInBtn').style.fontWeight='400';
-  document.getElementById('txnOutBtn').style.fontWeight='400';
+  document.getElementById('txn_itemId').value=id;document.getElementById('txnTitle').textContent=it.name+' 입출고';
+  document.getElementById('txn_qty').value='';document.getElementById('txn_memo').value='';document.getElementById('txn_type').value='';
+  document.getElementById('txnInBtn').style.fontWeight='400';document.getElementById('txnOutBtn').style.fontWeight='400';
   openModal('txn');
 }
-function setTxnType(t){
-  document.getElementById('txn_type').value=t;
-  document.getElementById('txnInBtn').style.fontWeight=t==='in'?'700':'400';
-  document.getElementById('txnOutBtn').style.fontWeight=t==='out'?'700':'400';
-}
+function setTxnType(t){document.getElementById('txn_type').value=t;document.getElementById('txnInBtn').style.fontWeight=t==='in'?'700':'400';document.getElementById('txnOutBtn').style.fontWeight=t==='out'?'700':'400';}
 function saveTxn(){
-  const id=document.getElementById('txn_itemId').value;
-  const type=document.getElementById('txn_type').value;
-  const qty=parseInt(document.getElementById('txn_qty').value)||0;
-  const memo=document.getElementById('txn_memo').value.trim();
+  const id=document.getElementById('txn_itemId').value,type=document.getElementById('txn_type').value;
+  const qty=parseInt(document.getElementById('txn_qty').value)||0,memo=document.getElementById('txn_memo').value.trim();
   if(!type){toast('입고/출고를 선택해 주세요','error');return;}
   if(!qty||qty<1){toast('수량을 입력해 주세요','error');return;}
   const it=db.items.find(x=>x.id===id);if(!it)return;
-  if(type==='out'&&it.qty<qty){toast('재고가 부족합니다 (현재: '+it.qty+')','error');return;}
+  if(type==='out'&&it.qty<qty){toast('재고 부족 (현재: '+it.qty+')','error');return;}
   it.qty=type==='in'?it.qty+qty:it.qty-qty;
-  db.txns=db.txns||[];
-  db.txns.push({id:uid(),itemId:id,type,qty,memo,date:tod(),by:getW()});
-  saveLocal();closeModal('txn');renderInv();
-  toast((type==='in'?'입고 ':'출고 ')+qty+(it.unit||'개')+' 처리됐습니다','success');
+  db.txns=db.txns||[];db.txns.push({id:uid(),itemId:id,type,qty,memo,date:tod(),by:getW()});
+  saveLocal();closeModal('txn');renderInv();toast((type==='in'?'입고 ':'출고 ')+qty+(it.unit||'개')+' 처리됐습니다','success');
 }
 
-/* ── 업무일지 ── */
-function allPlaces(){return [...db.hospitals,...db.univs];}
-function getPlaceType(p){return db.hospitals.includes(p)?'hospital':db.univs.includes(p)?'univ':'custom';}
+// ── 업무일지 ──
+function setJrnType(t){
+  curJrnType=t;
+  document.getElementById('jrnTypeHosp').style.background=t==='hospital'?'var(--red-light)':'';
+  document.getElementById('jrnTypeHosp').style.color=t==='hospital'?'var(--red)':'';
+  document.getElementById('jrnTypeHosp').style.fontWeight=t==='hospital'?'700':'400';
+  document.getElementById('jrnTypeUniv').style.background=t==='univ'?'var(--teal-light)':'';
+  document.getElementById('jrnTypeUniv').style.color=t==='univ'?'var(--teal)':'';
+  document.getElementById('jrnTypeUniv').style.fontWeight=t==='univ'?'700':'400';
+  const places=t==='hospital'?db.hospitals:db.univs;
+  document.getElementById('jrn_place').innerHTML=places.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('jrn_type').value=t;
+}
 function openAddJournal(editId){
   const j=editId?db.journals.find(x=>x.id===editId):null;
-  document.getElementById('jrn_id').value=j?j.id:'';
-  document.getElementById('addJrnTitle').textContent=j?'업무일지 수정':'업무일지 작성';
-  document.getElementById('jrn_date').value=j?j.date:tod();
-  document.getElementById('jrn_content').value=j?j.content:'';
-  const all=allPlaces();
-  document.getElementById('jrn_place').innerHTML=all.map(p=>`<option value="${p}"${j&&j.place===p?' selected':''}>${p}</option>`).join('');
+  document.getElementById('jrn_id').value=j?j.id:'';document.getElementById('addJrnTitle').textContent=j?'업무일지 수정':'업무일지 작성';
+  document.getElementById('jrn_date').value=j?j.date:tod();document.getElementById('jrn_content').value=j?j.content:'';
+  setJrnType(j?j.placeType||'hospital':'hospital');if(j)document.getElementById('jrn_place').value=j.place;
   openModal('addJournal');
 }
 function saveJournal(){
-  const id=document.getElementById('jrn_id').value;
-  const date=document.getElementById('jrn_date').value;
-  const place=document.getElementById('jrn_place').value;
+  const id=document.getElementById('jrn_id').value,date=document.getElementById('jrn_date').value;
+  const place=document.getElementById('jrn_place').value,placeType=document.getElementById('jrn_type').value||'hospital';
   const content=document.getElementById('jrn_content').value.trim();
   if(!date||!place||!content){toast('날짜, 장소, 내용은 필수입니다','error');return;}
-  if(id){const j=db.journals.find(x=>x.id===id);if(j)Object.assign(j,{date,place,placeType:getPlaceType(place),content});}
-  else db.journals.push({id:uid(),date,place,placeType:getPlaceType(place),content,createdAt:new Date().toISOString(),by:getW()});
+  if(id){const j=db.journals.find(x=>x.id===id);if(j)Object.assign(j,{date,place,placeType,content});}
+  else db.journals.push({id:uid(),date,place,placeType,content,createdAt:new Date().toISOString(),by:getW()});
   saveLocal();closeModal('addJournal');renderJournal();toast('저장됐습니다','success');
 }
-function deleteJournal(id){
-  if(!confirm('삭제하시겠습니까?'))return;
-  db.journals=db.journals.filter(x=>x.id!==id);
-  saveLocal();renderJournal();toast('삭제됐습니다');
-}
+function deleteJournal(id){if(!confirm('삭제하시겠습니까?'))return;db.journals=db.journals.filter(x=>x.id!==id);saveLocal();renderJournal();toast('삭제됐습니다');}
 function renderJournal(){
-  const all=['전체',...db.hospitals,...db.univs];
-  document.getElementById('journalFilter').innerHTML=all.map(p=>
-    `<div class="place-chip${p===curJF?' active':''}" onclick="setJF('${p}')">${p}</div>`).join('');
+  const filters=['전체',...db.hospitals.map(h=>({l:h,t:'hosp'})),...db.univs.map(u=>({l:u,t:'univ'}))];
+  document.getElementById('placeTabs').innerHTML=filters.map((f,i)=>{
+    const label=i===0?'전체':f.l,type=i===0?'':f.t,isA=curJF===label;
+    return `<div class="filter-chip${isA?' active':''} ${type}" onclick="setJF('${label}')">${label}</div>`;
+  }).join('');
   let list=[...db.journals].sort((a,b)=>b.date.localeCompare(a.date));
   if(curJF!=='전체')list=list.filter(j=>j.place===curJF);
-  if(!list.length){
-    document.getElementById('journalList').innerHTML='<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">업무일지가 없어요<br>+ 버튼으로 오늘 업무를 기록해 보세요</div></div>';return;
-  }
+  if(!list.length){document.getElementById('journalList').innerHTML='<div class="empty"><div class="empty-icon">📝</div><div>업무일지가 없어요<br>+ 버튼으로 오늘 업무를 기록해 보세요</div></div>';return;}
   const grouped={};list.forEach(j=>{(grouped[j.date]=grouped[j.date]||[]).push(j);});
   document.getElementById('journalList').innerHTML=Object.entries(grouped).map(([date,items])=>`
     <div class="journal-date-group">${date}</div>
     ${items.map(j=>`<div class="journal-card">
       <div class="journal-card-head">
-        <span class="journal-place ${j.placeType||'custom'}">${j.place}</span>
+        <span class="journal-place ${j.placeType||'hospital'}">${j.place}</span>
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:11px;color:var(--text3)">${j.by||''}</span>
           <button class="btn btn-xs" onclick="openAddJournal('${j.id}')">수정</button>
@@ -705,29 +908,25 @@ function renderJournal(){
 }
 function setJF(f){curJF=f;renderJournal();}
 
-/* ── 일정 ── */
-const catColor={점검:'var(--red)',교육:'var(--blue)',회의:'var(--green)',공사:'var(--orange)',기타:'var(--purple)'};
+// ── 일정 ──
+const catColor={점검:'var(--red)',교육:'var(--primary)',회의:'var(--green)',공사:'var(--amber)',기타:'var(--purple)'};
 function renderCalendar(){
   document.getElementById('calMonth').textContent=`${calYear}년 ${calMonth+1}월`;
-  const first=new Date(calYear,calMonth,1).getDay();
-  const last=new Date(calYear,calMonth+1,0).getDate();
-  const schMap={};
-  db.schedules.forEach(s=>{(schMap[s.date]=schMap[s.date]||[]).push(s);});
+  const first=new Date(calYear,calMonth,1).getDay(),last=new Date(calYear,calMonth+1,0).getDate();
+  const schMap={};db.schedules.forEach(s=>{(schMap[s.date]=schMap[s.date]||[]).push(s);});
   const dows=['일','월','화','수','목','금','토'];
   let h=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   const pl=new Date(calYear,calMonth,0).getDate();
   for(let i=first-1;i>=0;i--)h+=`<div class="cal-day other-month"><span class="cal-num">${pl-i}</span></div>`;
   for(let d=1;d<=last;d++){
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isT=ds===tod(),isSel=ds===selDate,dow=(first+d-1)%7;
-    const dots=(schMap[ds]||[]);
+    const isT=ds===tod(),isSel=ds===selDate,dow=(first+d-1)%7,dots=schMap[ds]||[];
     h+=`<div class="cal-day${isT?' today':''}${isSel?' selected':''} ${dow===0?'sun':dow===6?'sat':''}" onclick="selectDate('${ds}')">
       <span class="cal-num">${d}</span>
       <div class="cal-dots">${dots.slice(0,3).map(s=>`<div class="cal-dot" style="background:${catColor[s.cat]||'var(--gray)'}"></div>`).join('')}</div>
     </div>`;
   }
-  const rem=(7-(first+last)%7)%7;
-  for(let i=1;i<=rem;i++)h+=`<div class="cal-day other-month"><span class="cal-num">${i}</span></div>`;
+  const rem=(7-(first+last)%7)%7;for(let i=1;i<=rem;i++)h+=`<div class="cal-day other-month"><span class="cal-num">${i}</span></div>`;
   document.getElementById('calGrid').innerHTML=h;
 }
 function selectDate(d){selDate=d;renderCalendar();renderScheduleList();}
@@ -735,17 +934,13 @@ function moveMonth(d){calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMo
 function renderScheduleList(){
   document.getElementById('selectedDateLabel').textContent=selDate?`${selDate} 일정`:'일정';
   const list=db.schedules.filter(s=>!selDate||s.date===selDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-  if(!list.length){document.getElementById('scheduleList').innerHTML='<div class="empty" style="padding:24px"><div class="empty-text">이 날 일정이 없어요</div></div>';return;}
+  if(!list.length){document.getElementById('scheduleList').innerHTML='<div class="empty" style="padding:24px"><div>이 날 일정이 없어요</div></div>';return;}
   document.getElementById('scheduleList').innerHTML=list.map(s=>`
-    <div class="sch-item">
-      <div class="sch-dot" style="background:${catColor[s.cat]||'var(--gray)'}"></div>
+    <div class="sch-item" style="border-left-color:${catColor[s.cat]||'var(--primary)'}">
+      <div class="sch-dot" style="background:${catColor[s.cat]||'var(--primary)'}"></div>
       <div style="flex:1;min-width:0">
         <div class="sch-title">${s.title}</div>
-        <div class="sch-meta">
-          <span>${s.time||'종일'}</span>
-          <span class="badge b-gray">${s.cat||'기타'}</span>
-          ${s.memo?`<span>${s.memo}</span>`:''}
-        </div>
+        <div class="sch-meta"><span>${s.time||'종일'}</span><span class="badge b-gray">${s.cat||'기타'}</span>${s.memo?`<span>${s.memo}</span>`:''}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:3px">${s.by||''}</div>
       </div>
       <div style="display:flex;gap:4px;flex-direction:column">
@@ -755,109 +950,109 @@ function renderScheduleList(){
     </div>`).join('');
 }
 function openAddSchedule(){
-  document.getElementById('sch_id').value='';
-  document.getElementById('addSchTitle').textContent='일정 추가';
-  document.getElementById('sch_title').value='';
-  document.getElementById('sch_date').value=selDate||tod();
-  document.getElementById('sch_time').value='';
-  document.getElementById('sch_cat').value='점검';
-  document.getElementById('sch_memo').value='';
+  document.getElementById('sch_id').value='';document.getElementById('addSchTitle').textContent='일정 추가';
+  document.getElementById('sch_title').value='';document.getElementById('sch_date').value=selDate||tod();
+  document.getElementById('sch_time').value='';document.getElementById('sch_cat').value='점검';document.getElementById('sch_memo').value='';
   openModal('addSchedule');
 }
 function editSchedule(id){
   const s=db.schedules.find(x=>x.id===id);if(!s)return;
-  document.getElementById('sch_id').value=id;
-  document.getElementById('addSchTitle').textContent='일정 수정';
-  document.getElementById('sch_title').value=s.title;
-  document.getElementById('sch_date').value=s.date;
-  document.getElementById('sch_time').value=s.time||'';
-  document.getElementById('sch_cat').value=s.cat||'점검';
-  document.getElementById('sch_memo').value=s.memo||'';
+  document.getElementById('sch_id').value=id;document.getElementById('addSchTitle').textContent='일정 수정';
+  document.getElementById('sch_title').value=s.title;document.getElementById('sch_date').value=s.date;
+  document.getElementById('sch_time').value=s.time||'';document.getElementById('sch_cat').value=s.cat||'점검';document.getElementById('sch_memo').value=s.memo||'';
   openModal('addSchedule');
 }
 function saveSchedule(){
-  const id=document.getElementById('sch_id').value;
-  const title=document.getElementById('sch_title').value.trim();
-  const date=document.getElementById('sch_date').value;
-  const time=document.getElementById('sch_time').value;
-  const cat=document.getElementById('sch_cat').value;
-  const memo=document.getElementById('sch_memo').value.trim();
+  const id=document.getElementById('sch_id').value,title=document.getElementById('sch_title').value.trim();
+  const date=document.getElementById('sch_date').value,time=document.getElementById('sch_time').value;
+  const cat=document.getElementById('sch_cat').value,memo=document.getElementById('sch_memo').value.trim();
   if(!title||!date){toast('제목과 날짜는 필수입니다','error');return;}
   if(id){const s=db.schedules.find(x=>x.id===id);if(s)Object.assign(s,{title,date,time,cat,memo});}
   else db.schedules.push({id:uid(),title,date,time,cat,memo,by:getW()});
-  selDate=date;saveLocal();closeModal('addSchedule');renderCalendar();renderScheduleList();
-  toast('저장됐습니다','success');
+  selDate=date;saveLocal();closeModal('addSchedule');renderCalendar();renderScheduleList();toast('저장됐습니다','success');
 }
-function deleteSchedule(id){
-  if(!confirm('삭제하시겠습니까?'))return;
-  db.schedules=db.schedules.filter(x=>x.id!==id);
-  saveLocal();renderCalendar();renderScheduleList();toast('삭제됐습니다');
-}
+function deleteSchedule(id){if(!confirm('삭제하시겠습니까?'))return;db.schedules=db.schedules.filter(x=>x.id!==id);saveLocal();renderCalendar();renderScheduleList();toast('삭제됐습니다');}
 
-/* ── 설정 ── */
+// ── 메모 ──
+const memoCatColor={일반:'var(--amber)',중요:'var(--red)',업무:'var(--primary)',점검:'var(--green)'};
+const memoBadge={일반:'b-amber',중요:'b-red',업무:'b-primary',점검:'b-green'};
+function openAddMemo(editId){
+  const m=editId?db.memos.find(x=>x.id===editId):null;
+  document.getElementById('memo_id').value=m?m.id:'';document.getElementById('addMemoTitle').textContent=m?'메모 수정':'메모 추가';
+  document.getElementById('memo_title').value=m?m.title:'';document.getElementById('memo_content').value=m?m.content:'';
+  document.getElementById('memo_cat').value=m?m.cat||'일반':'일반';openModal('addMemo');
+}
+function saveMemo(){
+  const id=document.getElementById('memo_id').value,title=document.getElementById('memo_title').value.trim();
+  const content=document.getElementById('memo_content').value.trim(),cat=document.getElementById('memo_cat').value;
+  if(!title||!content){toast('제목과 내용은 필수입니다','error');return;}
+  if(id){const m=db.memos.find(x=>x.id===id);if(m)Object.assign(m,{title,content,cat,updatedAt:tod()});}
+  else db.memos.push({id:uid(),title,content,cat,createdAt:tod(),by:getW()});
+  saveLocal();closeModal('addMemo');renderMemo();toast('저장됐습니다','success');
+}
+function deleteMemo(id){if(!confirm('삭제하시겠습니까?'))return;db.memos=db.memos.filter(x=>x.id!==id);saveLocal();renderMemo();toast('삭제됐습니다');}
+function renderMemo(){
+  const cats=['전체','일반','중요','업무','점검'];
+  document.getElementById('memoFilter').innerHTML=cats.map(c=>`<div class="filter-chip${c===curMemoF?' active':''}" onclick="setMemoF('${c}')">${c}</div>`).join('');
+  let list=[...db.memos];if(curMemoF!=='전체')list=list.filter(m=>m.cat===curMemoF);
+  list.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  if(!list.length){document.getElementById('memoList').innerHTML='<div class="empty"><div class="empty-icon">🗒️</div><div>메모가 없어요<br>+ 버튼으로 추가해 보세요</div></div>';return;}
+  document.getElementById('memoList').innerHTML=list.map(m=>`
+    <div class="memo-card" style="border-left-color:${memoCatColor[m.cat]||'var(--amber)'}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${m.title}</div>
+            <span class="badge ${memoBadge[m.cat]||'b-amber'}">${m.cat||'일반'}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn btn-xs" onclick="openAddMemo('${m.id}')">수정</button>
+          <button class="btn btn-xs btn-outline-red" onclick="deleteMemo('${m.id}')">삭제</button>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-line">${m.content}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">${m.by||''} · ${m.updatedAt?'수정 '+m.updatedAt:m.createdAt}</div>
+    </div>`).join('');
+}
+function setMemoF(f){curMemoF=f;renderMemo();}
+
+// ── 설정 ──
 function renderSettings(){
-  document.getElementById('hospitalList').innerHTML=db.hospitals.map(h=>`
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="badge b-red">${h}</span>
-      <button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none" onclick="removePlace('hospital','${h}')">×</button>
-    </div>`).join('');
-  document.getElementById('univList').innerHTML=db.univs.map(u=>`
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="badge b-blue">${u}</span>
-      <button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none" onclick="removePlace('univ','${u}')">×</button>
-    </div>`).join('');
-  document.getElementById('catManageList').innerHTML=db.categories.map(c=>`
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="badge b-gray">${c}</span>
-      <button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none" onclick="removeCat('${c}')">×</button>
-    </div>`).join('');
-  document.getElementById('settingsName').value=userName;
+  renderMemberList();
+  const hospitalEl=document.getElementById('hospitalList');
+  const univEl=document.getElementById('univList');
+  const catEl=document.getElementById('catManageList');
+  if(hospitalEl)hospitalEl.innerHTML=db.hospitals.map(h=>`<div style="display:flex;align-items:center;gap:4px"><span class="badge b-red">${h}</span><button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none;background:none" onclick="removePlace('hospital','${h}')">×</button></div>`).join('');
+  if(univEl)univEl.innerHTML=db.univs.map(u=>`<div style="display:flex;align-items:center;gap:4px"><span class="badge b-teal">${u}</span><button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none;background:none" onclick="removePlace('univ','${u}')">×</button></div>`).join('');
+  if(catEl)catEl.innerHTML=db.categories.map(c=>`<div style="display:flex;align-items:center;gap:4px"><span class="badge b-gray">${catEmoji[c]||'📦'} ${c}</span><button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none;background:none" onclick="removeCat('${c}')">×</button></div>`).join('');
+  updateDarkUI();
 }
 function addPlace(type){
   const inp=document.getElementById(type==='hospital'?'newHospital':'newUniv');
   const val=inp.value.trim();if(!val)return;
   if(type==='hospital'){if(!db.hospitals.includes(val))db.hospitals.push(val);}
   else{if(!db.univs.includes(val))db.univs.push(val);}
-  inp.value='';saveLocal();renderSettings();toast('추가됐습니다','success');
+  inp.value='';saveLocal();renderSettings();renderJournal();toast('추가됐습니다','success');
 }
 function removePlace(type,val){
   if(type==='hospital')db.hospitals=db.hospitals.filter(x=>x!==val);
   else db.univs=db.univs.filter(x=>x!==val);
-  saveLocal();renderSettings();toast('삭제됐습니다');
+  saveLocal();renderSettings();renderJournal();
 }
 function addCategory(){
   const val=document.getElementById('newCat').value.trim();if(!val)return;
   if(!db.categories.includes(val))db.categories.push(val);
   document.getElementById('newCat').value='';saveLocal();renderSettings();renderInv();toast('추가됐습니다','success');
 }
-function removeCat(val){
-  db.categories=db.categories.filter(x=>x!==val);saveLocal();renderSettings();renderInv();
-}
-function saveName(){
-  const n=document.getElementById('settingsName').value.trim();if(!n){toast('이름을 입력해 주세요','error');return;}
-  userName=n;localStorage.setItem('fb_user',n);updateUserBadge();toast('저장됐습니다','success');
-}
+function removeCat(val){db.categories=db.categories.filter(x=>x!==val);saveLocal();renderSettings();renderInv();}
 
-/* ── 사용자 모달 ── */
-function saveUserName(){
-  const v=document.getElementById('userNameInput').value.trim();
-  if(!v){toast('이름을 입력해 주세요','error');return;}
-  userName=v;localStorage.setItem('fb_user',v);updateUserBadge();closeModal('setUser');
-  document.getElementById('settingsName').value=v;
-  toast('안녕하세요, '+v+'님!','success');
-}
-
-/* ── 모달 ── */
-function openModal(name){
-  if(!userName&&name!=='setUser'){document.getElementById('userNameInput').value='';openModal('setUser');return;}
-  document.getElementById('modal-'+name).classList.add('open');
-}
+// ── 모달 ──
+function openModal(name){document.getElementById('modal-'+name).classList.add('open');}
 function closeModal(name){document.getElementById('modal-'+name).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(el=>{
-  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
-});
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
 
-/* ── 데이터 관리 ── */
+// ── 데이터 ──
 function exportData(){
   const a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(db,null,2));
@@ -867,26 +1062,26 @@ function importClick(){document.getElementById('importFile').click();}
 function doImport(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{db=Object.assign(db,JSON.parse(ev.target.result));saveLocal();renderCurrent();renderSettings();toast('복원됐습니다','success');}catch{toast('파일 형식이 올바르지 않습니다','error');}};
+  r.onload=ev=>{try{db=Object.assign(db,JSON.parse(ev.target.result));saveLocal();renderAll();toast('복원됐습니다','success');}catch{toast('파일 형식이 올바르지 않습니다','error');}};
   r.readAsText(f);
 }
-function confirmReset(){
-  if(!confirm('모든 데이터를 초기화합니다. 계속하시겠습니까?'))return;
-  if(!confirm('정말 초기화하시겠습니까?'))return;
-  db={items:[],txns:[],journals:[],schedules:[],categories:['소화기류','호스·관창','감지기','밸브류','기타'],hospitals:['원주세브란스병원','원주기독병원'],univs:['연세대학교 미래캠퍼스','상지대학교']};
-  saveLocal();renderCurrent();renderSettings();toast('초기화됐습니다');
-}
 
-/* ── Toast ── */
+// ── Toast ──
 function toast(msg,type=''){
-  const el=document.createElement('div');
-  el.className='toast'+(type?' '+type:'');el.textContent=msg;
-  document.getElementById('toastWrap').appendChild(el);
-  setTimeout(()=>el.remove(),2800);
+  const el=document.createElement('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;
+  document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),2800);
 }
 
-init();
-if(!userName)setTimeout(()=>{document.getElementById('userNameInput').value='';openModal('setUser');},500);
+// ── 시작 ──
+(function start(){
+  const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();selDate=tod();
+  isDark=localStorage.getItem('fb_dark')==='1';
+  if(isDark)document.body.classList.add('dark');
+  try{const d=localStorage.getItem('fb_db');if(d)db=Object.assign(db,JSON.parse(d));}catch{}
+  if(!tryAutoLogin()){
+    document.getElementById('loginScreen').style.display='flex';
+  }
+})();
 </script>
 </body>
 </html>
