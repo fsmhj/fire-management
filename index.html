@@ -534,18 +534,40 @@ function doLogin(){
   const pw=document.getElementById('loginPw').value;
   const err=document.getElementById('loginError');
   if(!name){err.textContent='이름을 입력해 주세요';err.style.display='block';return;}
-  if(pw===db.adminPw||pw===DEFAULT_ADMIN_PW){
-    isAdmin=true; userName=name;
-    myTabs=ALL_TABS.map(t=>t.id);
-    enterApp();
-  } else if(pw===db.userPw||pw===DEFAULT_USER_PW){
-    isAdmin=false; userName=name;
-    const member=db.members.find(m=>m.name===name);
-    myTabs=member?member.tabs:['inv','journal','schedule','memo'];
-    enterApp();
+
+  // Firebase에서 최신 비밀번호 먼저 가져온 후 로그인 처리
+  const btn=document.querySelector('#loginScreen .btn-primary');
+  btn.textContent='확인 중...';btn.disabled=true;
+
+  function checkLogin(userPw, adminPw){
+    btn.textContent='입장하기';btn.disabled=false;
+    if(pw===adminPw){
+      isAdmin=true;userName=name;myTabs=ALL_TABS.map(t=>t.id);enterApp();
+    } else if(pw===userPw){
+      isAdmin=false;userName=name;
+      const member=db.members.find(m=>m.name===name);
+      myTabs=member?member.tabs:['inv','journal','schedule','memo'];
+      enterApp();
+    } else {
+      err.textContent='비밀번호가 올바르지 않습니다';err.style.display='block';
+      document.getElementById('loginPw').value='';
+    }
+  }
+
+  // Firebase에서 실시간 비밀번호 조회
+  if(typeof firebase!=='undefined'&&firebase.apps.length){
+    firebase.database().ref('sobangtm').once('value').then(snap=>{
+      const d=snap.val();
+      const userPw=(d&&d.userPw)||DEFAULT_USER_PW;
+      const adminPw=(d&&d.adminPw)||DEFAULT_ADMIN_PW;
+      if(d)db=Object.assign(db,d);
+      checkLogin(userPw,adminPw);
+    }).catch(()=>{
+      checkLogin(db.userPw||DEFAULT_USER_PW, db.adminPw||DEFAULT_ADMIN_PW);
+    });
   } else {
-    err.textContent='비밀번호가 올바르지 않습니다';err.style.display='block';
-    document.getElementById('loginPw').value='';
+    // Firebase 미연결 시 로컬 데이터로 확인
+    setTimeout(()=>checkLogin(db.userPw||DEFAULT_USER_PW, db.adminPw||DEFAULT_ADMIN_PW), 100);
   }
 }
 function enterApp(){
@@ -1079,6 +1101,24 @@ function toast(msg,type=''){
   isDark=localStorage.getItem('fb_dark')==='1';
   if(isDark)document.body.classList.add('dark');
   try{const d=localStorage.getItem('fb_db');if(d)db=Object.assign(db,JSON.parse(d));}catch{}
+
+  // Firebase SDK 미리 로드 (로그인 전에 준비)
+  if(typeof firebase==='undefined'){
+    let n=0;
+    ['https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
+     'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'].forEach(src=>{
+      const s=document.createElement('script');s.src=src;
+      s.onload=()=>{
+        if(++n===2){
+          try{
+            if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+          }catch(e){}
+        }
+      };
+      document.head.appendChild(s);
+    });
+  }
+
   if(!tryAutoLogin()){
     document.getElementById('loginScreen').style.display='flex';
   }
