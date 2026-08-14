@@ -712,13 +712,16 @@ function openAddMember(){
   document.getElementById('mbr_name').value='';
   mbrTabState={inv:true,journal:true,schedule:true,memo:true};
   openModal('addMember');
-  setTimeout(renderMbrTabToggles, 50);
+  setTimeout(renderMbrTabToggles, 100);
 }
 
 function renderMbrTabToggles(){
-  document.getElementById('mbrTabToggles').innerHTML=ALL_TABS.filter(t=>t.id!=='settings').map(t=>`
-    <span class="tab-toggle${mbrTabState[t.id]?' on':''}" onclick="toggleMbrTab('${t.id}')">${t.label}</span>
-  `).join('');
+  const el=document.getElementById('mbrTabToggles');
+  if(!el)return;
+  el.innerHTML=ALL_TABS.filter(t=>t.id!=='settings').map(t=>{
+    const on=mbrTabState[t.id];
+    return `<button onclick="toggleMbrTab('${t.id}')" style="padding:8px 14px;border-radius:20px;border:2px solid ${on?'var(--primary)':'var(--border2)'};background:${on?'var(--primary)':'var(--surface)'};color:${on?'#fff':'var(--text2)'};font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin:3px">${t.label}</button>`;
+  }).join('');
 }
 function toggleMbrTab(tabId){
   mbrTabState[tabId]=!mbrTabState[tabId];renderMbrTabToggles();
