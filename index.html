@@ -9,7 +9,7 @@
 :root{
   --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#eff6ff;--primary-border:#bfdbfe;
   --green:#16a34a;--green-light:#f0fff4;--green-border:#86efac;
-  --amber:#d97706;--amber-light:#fffbeb;--amber-border:#fcd34d; 
+  --amber:#d97706;--amber-light:#fffbeb;--amber-border:#fcd34d;
   --red:#dc2626;--red-light:#fef2f2;--red-border:#fca5a5;
   --purple:#7c3aed;--purple-light:#f5f3ff;
   --teal:#0d9488;--teal-light:#f0fdfa;--teal-border:#99f6e4;
@@ -689,9 +689,10 @@ function openAddMember(){
   document.getElementById('mbr_id').value='';
   document.getElementById('mbr_name').value='';
   mbrTabState={inv:true,journal:true,schedule:true,memo:true};
-  renderMbrTabToggles();
   openModal('addMember');
+  setTimeout(renderMbrTabToggles, 50);
 }
+
 function renderMbrTabToggles(){
   document.getElementById('mbrTabToggles').innerHTML=ALL_TABS.filter(t=>t.id!=='settings').map(t=>`
     <span class="tab-toggle${mbrTabState[t.id]?' on':''}" onclick="toggleMbrTab('${t.id}')">${t.label}</span>
