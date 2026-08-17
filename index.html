@@ -332,6 +332,24 @@ textarea{resize:vertical;min-height:80px}
       </div>
 
       <div class="settings-section">
+        <div class="settings-title">📏 단위 관리</div>
+        <div id="unitManageList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newUnitSetting" placeholder="단위 추가 (예: 박스)">
+          <button class="btn btn-sm btn-outline-primary" onclick="addUnitSetting()">추가</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">📍 보관위치 관리</div>
+        <div id="locManageList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newLocSetting" placeholder="위치 추가 (예: 3층 창고)">
+          <button class="btn btn-sm btn-outline-primary" onclick="addLocSetting()">추가</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
         <div class="settings-title">📦 재고 카테고리</div>
         <div id="catManageList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
         <div style="display:flex;gap:8px">
@@ -371,11 +389,20 @@ textarea{resize:vertical;min-height:80px}
   <div class="form-group"><label class="form-label">카테고리 *</label><select id="item_cat"></select></div>
   <div class="form-group"><label class="form-label">품목명 *</label><input type="text" id="item_name" placeholder="예: ABC형 소화기 3kg"></div>
   <div class="input-row">
-    <div class="form-group"><label class="form-label">단위</label><input type="text" id="item_unit" placeholder="개, 본..."></div>
+    <div class="form-group">
+      <label class="form-label">단위</label>
+      <button type="button" id="item_unit_btn" onclick="openUnitPicker()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);text-align:left;cursor:pointer">EA ▾</button>
+      <input type="hidden" id="item_unit" value="EA">
+    </div>
     <div class="form-group"><label class="form-label">현재 수량 *</label><input type="number" id="item_qty" placeholder="0" min="0"></div>
   </div>
   <div class="form-group"><label class="form-label">최소 수량 (알림)</label><input type="number" id="item_min" placeholder="0" min="0"></div>
-  <div class="form-group"><label class="form-label">메모</label><input type="text" id="item_memo" placeholder="보관위치 등"></div>
+  <div class="form-group">
+    <label class="form-label">보관위치</label>
+    <button type="button" id="item_loc_btn" onclick="openLocPicker()" style="width:100%;padding:10px 12px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface);text-align:left;cursor:pointer">선택 안함 ▾</button>
+    <input type="hidden" id="item_loc" value="">
+  </div>
+  <div class="form-group"><label class="form-label">메모</label><input type="text" id="item_memo" placeholder="추가 메모"></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('addItem')">취소</button>
     <button class="btn btn-primary" onclick="saveItem()">저장</button>
@@ -467,6 +494,31 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div></div>
 
+
+<!-- 모달: 단위 선택 -->
+<div class="modal-overlay" id="modal-unitPicker"><div class="modal" style="max-height:70vh">
+  <div class="modal-handle"></div>
+  <div class="modal-title">단위 선택</div>
+  <div id="unitPickerList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <input type="text" id="newUnitInput" placeholder="직접 입력" style="flex:1">
+    <button class="btn btn-primary btn-sm" onclick="addUnitAndSelect()">추가</button>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('unitPicker')">취소</button>
+  </div>
+</div></div>
+
+<!-- 모달: 보관위치 선택 -->
+<div class="modal-overlay" id="modal-locPicker"><div class="modal" style="max-height:70vh">
+  <div class="modal-handle"></div>
+  <div class="modal-title">보관위치 선택</div>
+  <div id="locPickerList" style="margin-bottom:16px"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('locPicker')">취소</button>
+  </div>
+</div></div>
+
 <!-- 모달: 팀원 추가 -->
 <div class="modal-overlay" id="modal-addMember"><div class="modal">
   <div class="modal-handle"></div>
@@ -518,7 +570,9 @@ let db={
   hospitals:['원주세브란스병원','원주기독병원'],
   univs:['연세대학교 미래캠퍼스','상지대학교'],
   userPw:DEFAULT_USER_PW,
-  adminPw:DEFAULT_ADMIN_PW
+  adminPw:DEFAULT_ADMIN_PW,
+  units:['EA','개','본','롤','박스','세트','kg','L'],
+  locations:['신관 지하 전기실','응급센터 지하 하론실','외래센터 2층 PIT실']
 };
 let userName='',isAdmin=false,myTabs=[],isDark=false,firebaseRef=null;
 let mbrTabState={};
@@ -798,7 +852,7 @@ function itemCardHTML(it){
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
       <div style="flex:1;min-width:0">
         <div class="item-name">${it.name}</div>
-        <div class="item-sub">${it.cat||''}${it.memo?' · '+it.memo:''}</div>
+        <div class="item-sub">${it.cat||''}${it.loc?' 📍'+it.loc:''}${it.memo?' · '+it.memo:''}</div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0">
         <button class="btn btn-xs btn-outline-primary" onclick="openTxn('${it.id}')">입출고</button>
@@ -830,14 +884,22 @@ function itemCardHTML(it){
 function toggleLog(id){const el=document.getElementById('log-'+id);if(el)el.classList.toggle('open');}
 function openAddItem(){
   document.getElementById('item_id').value='';document.getElementById('addItemTitle').textContent='품목 추가';
-  ['item_name','item_qty','item_min','item_unit','item_memo'].forEach(id=>document.getElementById(id).value='');
+  ['item_name','item_qty','item_min','item_memo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('item_unit').value='EA';
+  document.getElementById('item_unit_btn').textContent='EA ▾';
+  document.getElementById('item_loc').value='';
+  document.getElementById('item_loc_btn').textContent='선택 안함 ▾';
   renderItemCatSel();openModal('addItem');
 }
 function openEditItem(id){
   const it=db.items.find(x=>x.id===id);if(!it)return;
   document.getElementById('item_id').value=id;document.getElementById('addItemTitle').textContent='품목 수정';
   document.getElementById('item_name').value=it.name;document.getElementById('item_qty').value=it.qty;
-  document.getElementById('item_min').value=it.min||'';document.getElementById('item_unit').value=it.unit||'';
+  document.getElementById('item_min').value=it.min||'';
+  document.getElementById('item_unit').value=it.unit||'EA';
+  document.getElementById('item_unit_btn').textContent=(it.unit||'EA')+' ▾';
+  document.getElementById('item_loc').value=it.loc||'';
+  document.getElementById('item_loc_btn').textContent=(it.loc||'선택 안함')+' ▾';
   document.getElementById('item_memo').value=it.memo||'';renderItemCatSel(it.cat);openModal('addItem');
 }
 function renderItemCatSel(cur){document.getElementById('item_cat').innerHTML=db.categories.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');}
@@ -846,9 +908,10 @@ function saveItem(){
   const qty=parseInt(document.getElementById('item_qty').value)||0,min=parseInt(document.getElementById('item_min').value)||0;
   const unit=document.getElementById('item_unit').value.trim()||'개',memo=document.getElementById('item_memo').value.trim();
   const cat=document.getElementById('item_cat').value;
+  const loc=document.getElementById('item_loc').value;
   if(!name){toast('품목명을 입력해 주세요','error');return;}
-  if(id){const it=db.items.find(x=>x.id===id);if(it)Object.assign(it,{name,qty,min,unit,memo,cat});}
-  else{db.items.push({id:uid(),name,qty,min,unit,memo,cat,createdAt:tod(),by:getW()});openCats[cat]=true;}
+  if(id){const it=db.items.find(x=>x.id===id);if(it)Object.assign(it,{name,qty,min,unit,memo,cat,loc});}
+  else{db.items.push({id:uid(),name,qty,min,unit,memo,cat,loc,createdAt:tod(),by:getW()});openCats[cat]=true;}
   saveLocal();closeModal('addItem');renderInv();toast(id?'수정됐습니다':'추가됐습니다','success');
 }
 function deleteItem(id){if(!confirm('삭제하시겠습니까?'))return;db.items=db.items.filter(x=>x.id!==id);db.txns=(db.txns||[]).filter(x=>x.itemId!==id);saveLocal();renderInv();toast('삭제됐습니다');}
@@ -1046,6 +1109,18 @@ function setMemoF(f){curMemoF=f;renderMemo();}
 // ── 설정 ──
 function renderSettings(){
   renderMemberList();
+  // 단위 관리
+  const unitEl=document.getElementById('unitManageList');
+  if(unitEl){
+    const units=db.units||['EA','개','본','롤','박스','세트','kg','L'];
+    unitEl.innerHTML=units.map(u=>`<div style="display:flex;align-items:center;gap:4px"><span class="badge b-primary">${u}</span><button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none;background:none" onclick="removeUnit('${u}')">×</button></div>`).join('');
+  }
+  // 위치 관리
+  const locEl=document.getElementById('locManageList');
+  if(locEl){
+    const locs=db.locations||[];
+    locEl.innerHTML=locs.map(l=>`<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px"><span class="badge b-teal">📍 ${l}</span><button class="btn btn-xs" style="padding:1px 5px;color:var(--text3);border:none;background:none" onclick="removeLoc('${l.replace(/'/g,"\'")}')">×</button></div>`).join('');
+  }
   const hospitalEl=document.getElementById('hospitalList');
   const univEl=document.getElementById('univList');
   const catEl=document.getElementById('catManageList');
@@ -1076,7 +1151,7 @@ function removeCat(val){db.categories=db.categories.filter(x=>x!==val);saveLocal
 // ── 모달 ──
 function openModal(name){document.getElementById('modal-'+name).classList.add('open');}
 function closeModal(name){document.getElementById('modal-'+name).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+// 모달 바깥 클릭으로 닫히지 않도록 고정
 
 // ── 데이터 ──
 function exportData(){
@@ -1090,6 +1165,65 @@ function doImport(e){
   const r=new FileReader();
   r.onload=ev=>{try{db=Object.assign(db,JSON.parse(ev.target.result));saveLocal();renderAll();toast('복원됐습니다','success');}catch{toast('파일 형식이 올바르지 않습니다','error');}};
   r.readAsText(f);
+}
+
+
+// ── 단위 팝업 ──
+function openUnitPicker(){
+  const units=db.units||['EA','개','본','롤','박스','세트','kg','L'];
+  const cur=document.getElementById('item_unit').value||'EA';
+  document.getElementById('unitPickerList').innerHTML=units.map(u=>`
+    <button onclick="selectUnit('${u}')" style="padding:10px 18px;border-radius:20px;border:2px solid ${u===cur?'var(--primary)':'var(--border2)'};background:${u===cur?'var(--primary)':'var(--surface)'};color:${u===cur?'#fff':'var(--text2)'};font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">${u}</button>
+  `).join('');
+  document.getElementById('newUnitInput').value='';
+  openModal('unitPicker');
+}
+function selectUnit(u){
+  document.getElementById('item_unit').value=u;
+  document.getElementById('item_unit_btn').textContent=u+' ▾';
+  closeModal('unitPicker');
+}
+function addUnitAndSelect(){
+  const val=document.getElementById('newUnitInput').value.trim();
+  if(!val){toast('단위를 입력해 주세요','error');return;}
+  db.units=db.units||['EA','개','본','롤','박스','세트','kg','L'];
+  if(!db.units.includes(val))db.units.push(val);
+  saveLocal();selectUnit(val);
+}
+
+// ── 보관위치 팝업 ──
+function openLocPicker(){
+  const locs=db.locations||[];
+  const cur=document.getElementById('item_loc').value||'';
+  document.getElementById('locPickerList').innerHTML=`
+    <button onclick="selectLoc('')" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:2px solid ${cur===''?'var(--primary)':'var(--border2)'};background:${cur===''?'var(--primary)':'var(--surface)'};color:${cur===''?'#fff':'var(--text2)'};font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:6px">선택 안함</button>
+    ${locs.map(l=>`<button onclick="selectLoc('${l.replace(/'/g,"\'")}')" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:2px solid ${l===cur?'var(--primary)':'var(--border2)'};background:${l===cur?'var(--primary)':'var(--surface)'};color:${l===cur?'#fff':'var(--text2)'};font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:6px">📍 ${l}</button>`).join('')}`;
+  openModal('locPicker');
+}
+function selectLoc(l){
+  document.getElementById('item_loc').value=l;
+  document.getElementById('item_loc_btn').textContent=(l||'선택 안함')+' ▾';
+  closeModal('locPicker');
+}
+
+// ── 단위/위치 설정 관리 ──
+function addUnitSetting(){
+  const val=document.getElementById('newUnitSetting').value.trim();if(!val)return;
+  db.units=db.units||['EA','개','본','롤','박스','세트','kg','L'];
+  if(!db.units.includes(val))db.units.push(val);
+  document.getElementById('newUnitSetting').value='';saveLocal();renderSettings();toast('추가됐습니다','success');
+}
+function removeUnit(val){
+  db.units=(db.units||[]).filter(x=>x!==val);saveLocal();renderSettings();
+}
+function addLocSetting(){
+  const val=document.getElementById('newLocSetting').value.trim();if(!val)return;
+  db.locations=db.locations||[];
+  if(!db.locations.includes(val))db.locations.push(val);
+  document.getElementById('newLocSetting').value='';saveLocal();renderSettings();toast('추가됐습니다','success');
+}
+function removeLoc(val){
+  db.locations=(db.locations||[]).filter(x=>x!==val);saveLocal();renderSettings();
 }
 
 // ── Toast ──
