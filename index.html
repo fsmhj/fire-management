@@ -632,6 +632,9 @@ function enterApp(){
   document.getElementById('appWrap').classList.add('visible');
   document.getElementById('userBadge').innerHTML=(isAdmin?'👑 ':'👤 ')+userName;
   document.getElementById('adminPanel').style.display=isAdmin?'block':'none';
+  // Firebase 상태 초기화
+  const fsEl=document.getElementById('firebaseStatus');
+  if(fsEl){fsEl.className='firebase-status disconnected';fsEl.textContent='🔄 Firebase 연결 중...';}
   buildNav();
   renderAll();
   initFirebase(FIREBASE_CONFIG);
@@ -700,9 +703,15 @@ function setupFB(cfg){
       }
       setSyncStatus('ok');
       const el=document.getElementById('firebaseStatus');
-      el.className='firebase-status connected';el.textContent='🟢 실시간 동기화 중';
+      if(el){el.className='firebase-status connected';el.textContent='🟢 실시간 동기화 중';}
     });
-  }catch(e){setSyncStatus('error');}
+  }catch(e){
+    setSyncStatus('error');
+    const el=document.getElementById('firebaseStatus');
+    if(el){el.className='firebase-status disconnected';el.textContent='🔴 연결 오류 — 재시도 중...';}
+    // 3초 후 재시도
+    setTimeout(()=>setupFB(cfg), 3000);
+  }
 }
 function saveLocal(){
   localStorage.setItem('fb_db',JSON.stringify(db));
@@ -863,7 +872,10 @@ function itemCardHTML(it){
     <div class="item-qty-wrap">
       <button class="qty-btn" onclick="quickQty('${it.id}',-1)" style="color:var(--red)">−</button>
       <div style="text-align:center">
-        <div class="qty-display${isLow?' low':''}">${it.qty}</div>
+        <input type="number" min="0" value="${it.qty}"
+          style="width:64px;font-size:20px;font-weight:700;font-family:monospace;text-align:center;border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:4px 2px;background:var(--surface);color:${isLow?'var(--red)':'var(--text)'};outline:none"
+          onchange="setQtyDirect('${it.id}',this.value)"
+          onfocus="this.select()">
         <div class="qty-unit">${it.unit||'개'}</div>
       </div>
       <button class="qty-btn" onclick="quickQty('${it.id}',1)" style="color:var(--green)">＋</button>
@@ -919,6 +931,16 @@ function quickQty(id,d){
   const it=db.items.find(x=>x.id===id);if(!it)return;
   it.qty=Math.max(0,it.qty+d);
   db.txns=db.txns||[];db.txns.push({id:uid(),itemId:id,type:d>0?'in':'out',qty:Math.abs(d),memo:'빠른조정',date:tod(),by:getW()});
+  saveLocal();renderInv();
+}
+function setQtyDirect(id, val){
+  const it=db.items.find(x=>x.id===id);if(!it)return;
+  const newQty=Math.max(0,parseInt(val)||0);
+  const diff=newQty-it.qty;
+  if(diff===0)return;
+  it.qty=newQty;
+  db.txns=db.txns||[];
+  db.txns.push({id:uid(),itemId:id,type:diff>0?'in':'out',qty:Math.abs(diff),memo:'직접입력',date:tod(),by:getW()});
   saveLocal();renderInv();
 }
 function openTxn(id){
