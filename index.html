@@ -49,12 +49,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .header{background:var(--primary);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-md)}
 .logo{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px}
 .header-right{display:flex;align-items:center;gap:8px}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#86efac;flex-shrink:0}
+.sync-dot{width:10px;height:10px;border-radius:50%;background:#86efac;flex-shrink:0;box-shadow:0 0 4px rgba(134,239,172,.6)}
 .sync-dot.syncing{background:#fcd34d;animation:pulse 1s infinite}
 .sync-dot.error{background:#f87171}
-.user-badge{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:4px}
+.user-badge{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:4px}
 .admin-crown{font-size:11px}
-.dark-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.dark-btn{background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.6);color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px;border:none;background:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text3);font-size:9px;font-weight:500;gap:3px;transition:color .15s}
