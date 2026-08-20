@@ -266,17 +266,22 @@ textarea{resize:vertical;min-height:80px}
       <button class="btn btn-sm" onclick="switchPage('inv')">← 재고로</button>
       <div style="font-size:15px;font-weight:700;color:var(--text)">입출고 이력</div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <select id="histFilterFY" onchange="renderTxnHistory()" style="flex:1;min-width:130px">
+      </select>
       <select id="histFilterType" onchange="renderTxnHistory()" style="flex:1;min-width:100px">
         <option value="">전체</option>
         <option value="in">📥 입고만</option>
         <option value="out">📤 사용만</option>
       </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <select id="histFilterItem" onchange="renderTxnHistory()" style="flex:1;min-width:120px">
         <option value="">전체 품목</option>
       </select>
       <input type="date" id="histFilterDate" onchange="renderTxnHistory()" style="flex:1;min-width:120px">
     </div>
+    <div id="txnHistorySummary"></div>
     <div id="txnHistoryList"></div>
   </div>
 
@@ -579,7 +584,10 @@ textarea{resize:vertical;min-height:80px}
     <input type="text" id="bulkInMemo" placeholder="예: OO업체 납품">
   </div>
   <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">품목별 입고 수량</div>
-  <div id="bulkInList" style="max-height:340px;overflow-y:auto"></div>
+  <div style="margin-bottom:8px">
+    <input type="text" id="bulkInSearch" placeholder="🔍 품목 검색... (예: 소화)" oninput="filterBulkInList()" style="width:100%">
+  </div>
+  <div id="bulkInList" style="max-height:300px;overflow-y:auto"></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('bulkIn')">취소</button>
     <button class="btn btn-green" onclick="saveBulkIn()">📥 입고 등록</button>
@@ -600,7 +608,10 @@ textarea{resize:vertical;min-height:80px}
     <input type="text" id="bulkUseMemo" placeholder="예: 3층 스프링클러 헤드 교체">
   </div>
   <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">사용한 품목 선택</div>
-  <div id="bulkUseList" style="max-height:340px;overflow-y:auto"></div>
+  <div style="margin-bottom:8px">
+    <input type="text" id="bulkUseSearch" placeholder="🔍 품목 검색... (예: 소화)" oninput="filterBulkUseList()" style="width:100%">
+  </div>
+  <div id="bulkUseList" style="max-height:300px;overflow-y:auto"></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('bulkUse')">취소</button>
     <button class="btn btn-outline-red" onclick="saveBulkUse()">📤 사용 등록</button>
@@ -1330,17 +1341,24 @@ function removeLoc(val){
 function openBulkIn(){
   document.getElementById('bulkInDate').value = tod();
   document.getElementById('bulkInMemo').value = '';
+  document.getElementById('bulkInSearch').value = '';
   const items = db.items;
   if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
-  document.getElementById('bulkInList').innerHTML = items.map(it => `
+  renderBulkInList('');
+  openModal('bulkIn');
+}
+function renderBulkInList(q){
+  const items = db.items.filter(it => !q || it.name.toLowerCase().includes(q.toLowerCase()) || (it.cat||'').toLowerCase().includes(q.toLowerCase()));
+  const el = document.getElementById('bulkInList'); if(!el) return;
+  if(!items.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">검색 결과가 없어요</div>'; return; }
+  el.innerHTML = items.map(it => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;gap:10px">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
         <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 현재 ${it.qty}${it.unit||'개'}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <input type="number" min="0" placeholder="0"
-          id="bulkIn_${it.id}"
+        <input type="number" min="0" placeholder="0" id="bulkIn_${it.id}"
           style="width:70px;padding:7px 8px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
           oninput="updateBulkInPreview('${it.id}','${it.unit||'개'}',${it.qty},this.value)">
         <span style="font-size:12px;color:var(--text3);min-width:28px">${it.unit||'개'}</span>
@@ -1348,68 +1366,50 @@ function openBulkIn(){
     </div>
     <div id="bulkInPreview_${it.id}" style="font-size:11px;color:var(--green);text-align:right;margin-bottom:4px;display:none"></div>
   `).join('');
-  openModal('bulkIn');
 }
-function updateBulkInPreview(id, unit, curQty, val){
-  const qty = parseInt(val)||0;
-  const el = document.getElementById('bulkInPreview_'+id);
-  if(!el) return;
-  if(qty > 0){
-    el.style.display='block';
-    el.textContent = `✓ ${curQty} + ${qty} = ${curQty+qty}${unit}`;
-  } else {
-    el.style.display='none';
-  }
+function filterBulkInList(){
+  const q = document.getElementById('bulkInSearch')?.value||'';
+  renderBulkInList(q);
 }
-function saveBulkIn(){
-  const date = document.getElementById('bulkInDate').value;
-  const memo = document.getElementById('bulkInMemo').value.trim();
-  if(!date){ toast('입고일을 선택해 주세요','error'); return; }
-  let count = 0;
-  db.items.forEach(it => {
-    const input = document.getElementById('bulkIn_'+it.id);
-    if(!input) return;
-    const qty = parseInt(input.value)||0;
-    if(qty <= 0) return;
-    it.qty += qty;
-    db.txns = db.txns||[];
-    db.txns.push({id:uid(), itemId:it.id, type:'in', qty, memo: memo||'일괄입고', date, by:getW()});
-    count++;
-  });
-  if(!count){ toast('입고 수량을 1개 이상 입력해 주세요','error'); return; }
-  saveLocal(); closeModal('bulkIn'); renderInv();
-  toast(`${count}개 품목 입고 등록됐습니다`, 'success');
-}
-
-// ── 일괄 사용 (출고) ──
-let useSelected = {}; // {itemId: qty}
 function openBulkUse(){
   document.getElementById('bulkUseDate').value = tod();
   document.getElementById('bulkUseMemo').value = '';
+  document.getElementById('bulkUseSearch').value = '';
   useSelected = {};
   const items = db.items;
   if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
-  document.getElementById('bulkUseList').innerHTML = items.map(it => `
-    <div id="useRow_${it.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;gap:10px;cursor:pointer;border:2px solid transparent;transition:border .15s" onclick="toggleUseItem('${it.id}')">
+  renderBulkUseList('');
+  openModal('bulkUse');
+}
+function renderBulkUseList(q){
+  const items = db.items.filter(it => !q || it.name.toLowerCase().includes(q.toLowerCase()) || (it.cat||'').toLowerCase().includes(q.toLowerCase()));
+  const el = document.getElementById('bulkUseList'); if(!el) return;
+  if(!items.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">검색 결과가 없어요</div>'; return; }
+  el.innerHTML = items.map(it => {
+    const isSelected = useSelected[it.id] !== undefined;
+    return `<div id="useRow_${it.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:${isSelected?'var(--primary-light)':'var(--surface2)'};border-radius:var(--radius-sm);margin-bottom:6px;gap:10px;cursor:pointer;border:2px solid ${isSelected?'var(--primary)':'transparent'};transition:all .15s" onclick="toggleUseItem('${it.id}')">
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-        <div id="useCheck_${it.id}" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0"></div>
+        <div id="useCheck_${it.id}" style="width:22px;height:22px;border-radius:50%;border:2px solid ${isSelected?'var(--primary)':'var(--border2)'};background:${isSelected?'var(--primary)':'var(--surface)'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:#fff">${isSelected?'✓':''}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
           <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 재고 ${it.qty}${it.unit||'개'}</div>
         </div>
       </div>
-      <div id="useQtyWrap_${it.id}" style="display:none;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+      <div id="useQtyWrap_${it.id}" style="display:${isSelected?'flex':'none'};align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
         <button onclick="changeUseQty('${it.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center">−</button>
-        <input type="number" min="1" max="${it.qty}" value="1"
+        <input type="number" min="1" max="${it.qty}" value="${isSelected?useSelected[it.id]:1}"
           id="useQty_${it.id}"
           style="width:52px;padding:5px 4px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
           oninput="useSelected['${it.id}']=parseInt(this.value)||1">
         <button onclick="changeUseQty('${it.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--green);display:flex;align-items:center;justify-content:center">＋</button>
         <span style="font-size:12px;color:var(--text3)">${it.unit||'개'}</span>
       </div>
-    </div>
-  `).join('');
-  openModal('bulkUse');
+    </div>`;
+  }).join('');
+}
+function filterBulkUseList(){
+  const q = document.getElementById('bulkUseSearch')?.value||'';
+  renderBulkUseList(q);
 }
 function toggleUseItem(id){
   const row = document.getElementById('useRow_'+id);
@@ -1517,10 +1517,33 @@ function renderDdayBanner(){
 }
 
 // ── 입출고 이력 ──
+function getFYOptions(){
+  // 회계연도: 3/1 ~ 다음해 2/28. 현재 회계연도 계산
+  const now = new Date();
+  const curFY = now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear()-1;
+  const options = [];
+  for(let y=curFY; y>=curFY-3; y--){
+    options.push({label:`${y}년도 (${y}.03.01 ~ ${y+1}.02.28)`, start:`${y}-03-01`, end:`${y+1}-02-28`});
+  }
+  return options;
+}
 function renderTxnHistory(){
+  // 회계연도 셀렉트 초기화
+  const fyEl = document.getElementById('histFilterFY');
+  if(fyEl && fyEl.options.length <= 1){
+    getFYOptions().forEach((fy,i)=>{
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify({start:fy.start,end:fy.end});
+      opt.textContent = fy.label;
+      if(i===0) opt.selected=true;
+      fyEl.appendChild(opt);
+    });
+  }
+
   const typeF = document.getElementById('histFilterType')?.value||'';
   const itemF = document.getElementById('histFilterItem')?.value||'';
   const dateF = document.getElementById('histFilterDate')?.value||'';
+  const fyVal = document.getElementById('histFilterFY')?.value||'';
 
   // 품목 필터 옵션 채우기
   const sel = document.getElementById('histFilterItem');
@@ -1533,6 +1556,15 @@ function renderTxnHistory(){
   }
 
   let txns = [...(db.txns||[])];
+
+  // 회계연도 필터
+  if(fyVal){
+    try{
+      const {start,end} = JSON.parse(fyVal);
+      txns = txns.filter(t=>t.date>=start && t.date<=end);
+    }catch{}
+  }
+
   if(typeF) txns = txns.filter(t=>t.type===typeF);
   if(itemF) txns = txns.filter(t=>t.itemId===itemF);
   if(dateF) txns = txns.filter(t=>t.date===dateF);
@@ -1549,59 +1581,12 @@ function renderTxnHistory(){
   const grouped = {};
   txns.forEach(t=>{ (grouped[t.date||'날짜없음']=grouped[t.date||'날짜없음']||[]).push(t); });
 
-  el.innerHTML = Object.entries(grouped).map(([date, list])=>`
-    <div style="font-size:12px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:8px">${date}</div>
-    ${list.map(t=>{
-      const it = db.items.find(x=>x.id===t.itemId);
-      const isIn = t.type==='in';
-      return `<div style="background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-left:3px solid ${isIn?'var(--green)':'var(--red)'}">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${it?it.name:'삭제된 품목'}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:3px">${t.memo||''} ${t.by?'· '+t.by:''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:16px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};font-family:monospace">${isIn?'+':'-'}${t.qty}${it?it.unit||'개':'개'}</div>
-          <div class="badge ${isIn?'b-green':'b-red'}" style="margin-top:3px">${isIn?'📥 입고':'📤 사용'}</div>
-        </div>
-      </div>`;
-    }).join('')}
-  `).join('');
-}
-
-// ── Toast ──
-function toast(msg,type=''){
-  const el=document.createElement('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;
-  document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),2800);
-}
-
-// ── 시작 ──
-(function start(){
-  const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();selDate=tod();
-  isDark=localStorage.getItem('fb_dark')==='1';
-  if(isDark)document.body.classList.add('dark');
-  try{const d=localStorage.getItem('fb_db');if(d)db=Object.assign(db,JSON.parse(d));}catch{}
-
-  // Firebase SDK 미리 로드 (로그인 전에 준비)
-  if(typeof firebase==='undefined'){
-    let n=0;
-    ['https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
-     'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'].forEach(src=>{
-      const s=document.createElement('script');s.src=src;
-      s.onload=()=>{
-        if(++n===2){
-          try{
-            if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
-          }catch(e){}
-        }
-      };
-      document.head.appendChild(s);
-    });
-  }
-
-  if(!tryAutoLogin()){
-    document.getElementById('loginScreen').style.display='flex';
-  }
-})();
-</script>
-</body>
-</html>
+  // 회계연도 요약
+  const inTotal = txns.filter(t=>t.type==='in').reduce((s,t)=>s+t.qty,0);
+  const outTotal = txns.filter(t=>t.type==='out').reduce((s,t)=>s+t.qty,0);
+  const summaryEl = document.getElementById('txnHistorySummary');
+  if(summaryEl && txns.length){
+    summaryEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--green);font-weight:600">📥 총 입고</div>
+        <div style="font-size:20px;font-weight:700;c
