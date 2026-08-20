@@ -574,7 +574,6 @@ textarea{resize:vertical;min-height:80px}
 <div class="modal-overlay" id="modal-bulkIn"><div class="modal" style="max-height:90vh">
   <div class="modal-handle"></div>
   <div class="modal-title">📥 입고 등록</div>
-  <div style="font-size:12px;color:var(--text3);margin-bottom:14px">입고 수량을 입력하면 기존 수량에 자동으로 더해져요</div>
   <div class="form-group">
     <label class="form-label">입고일</label>
     <input type="date" id="bulkInDate">
@@ -583,11 +582,15 @@ textarea{resize:vertical;min-height:80px}
     <label class="form-label">메모 (납품업체, 발주번호 등)</label>
     <input type="text" id="bulkInMemo" placeholder="예: OO업체 납품">
   </div>
-  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">품목별 입고 수량</div>
-  <div style="margin-bottom:8px">
-    <input type="text" id="bulkInSearch" placeholder="🔍 품목 검색... (예: 소화)" oninput="filterBulkInList()" style="width:100%">
+  <!-- 품목 검색 -->
+  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">품목 검색</div>
+  <input type="text" id="bulkInSearch" placeholder="🔍 품목명 입력... (예: 소화)" oninput="filterBulkInList()" style="width:100%;margin-bottom:6px">
+  <div id="bulkInSearchResult" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);display:none;margin-bottom:12px"></div>
+  <!-- 선택된 품목 목록 -->
+  <div id="bulkInSelectedWrap" style="display:none">
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">선택된 품목 <span id="bulkInSelectedCount" style="color:var(--primary)"></span></div>
+    <div id="bulkInSelectedList" style="max-height:220px;overflow-y:auto"></div>
   </div>
-  <div id="bulkInList" style="max-height:300px;overflow-y:auto"></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('bulkIn')">취소</button>
     <button class="btn btn-green" onclick="saveBulkIn()">📥 입고 등록</button>
@@ -598,7 +601,6 @@ textarea{resize:vertical;min-height:80px}
 <div class="modal-overlay" id="modal-bulkUse"><div class="modal" style="max-height:90vh">
   <div class="modal-handle"></div>
   <div class="modal-title">📤 사용 등록</div>
-  <div style="font-size:12px;color:var(--text3);margin-bottom:14px">사용한 품목과 수량을 선택하면 재고에서 자동으로 차감돼요</div>
   <div class="form-group">
     <label class="form-label">사용일</label>
     <input type="date" id="bulkUseDate">
@@ -607,11 +609,15 @@ textarea{resize:vertical;min-height:80px}
     <label class="form-label">작업 내용</label>
     <input type="text" id="bulkUseMemo" placeholder="예: 3층 스프링클러 헤드 교체">
   </div>
-  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">사용한 품목 선택</div>
-  <div style="margin-bottom:8px">
-    <input type="text" id="bulkUseSearch" placeholder="🔍 품목 검색... (예: 소화)" oninput="filterBulkUseList()" style="width:100%">
+  <!-- 품목 검색 -->
+  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">품목 검색</div>
+  <input type="text" id="bulkUseSearch" placeholder="🔍 품목명 입력... (예: 소화)" oninput="filterBulkUseList()" style="width:100%;margin-bottom:6px">
+  <div id="bulkUseSearchResult" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);display:none;margin-bottom:12px"></div>
+  <!-- 선택된 품목 목록 -->
+  <div id="bulkUseSelectedWrap" style="display:none">
+    <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">선택된 품목 <span id="bulkUseSelectedCount" style="color:var(--primary)"></span></div>
+    <div id="bulkUseSelectedList" style="max-height:220px;overflow-y:auto"></div>
   </div>
-  <div id="bulkUseList" style="max-height:300px;overflow-y:auto"></div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('bulkUse')">취소</button>
     <button class="btn btn-outline-red" onclick="saveBulkUse()">📤 사용 등록</button>
@@ -1338,136 +1344,243 @@ function removeLoc(val){
 
 
 // ── 일괄 입고 ──
+let bulkInSelected = {}; // {itemId: qty}
+
 function openBulkIn(){
+  bulkInSelected = {};
   document.getElementById('bulkInDate').value = tod();
   document.getElementById('bulkInMemo').value = '';
   document.getElementById('bulkInSearch').value = '';
-  const items = db.items;
-  if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
-  renderBulkInList('');
+  document.getElementById('bulkInSearchResult').style.display = 'none';
+  document.getElementById('bulkInSearchResult').innerHTML = '';
+  renderBulkInSelected();
   openModal('bulkIn');
 }
-function renderBulkInList(q){
-  const items = db.items.filter(it => !q || it.name.toLowerCase().includes(q.toLowerCase()) || (it.cat||'').toLowerCase().includes(q.toLowerCase()));
-  const el = document.getElementById('bulkInList'); if(!el) return;
-  if(!items.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">검색 결과가 없어요</div>'; return; }
-  el.innerHTML = items.map(it => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;gap:10px">
-      <div style="flex:1;min-width:0">
+
+function filterBulkInList(){
+  const q = document.getElementById('bulkInSearch').value.trim();
+  const resultEl = document.getElementById('bulkInSearchResult');
+  if(!q){ resultEl.style.display='none'; resultEl.innerHTML=''; return; }
+  const items = db.items.filter(it =>
+    it.name.toLowerCase().includes(q.toLowerCase()) ||
+    (it.cat||'').toLowerCase().includes(q.toLowerCase())
+  );
+  if(!items.length){
+    resultEl.style.display='block';
+    resultEl.innerHTML='<div style="padding:12px;text-align:center;color:var(--text3);font-size:13px">검색 결과가 없어요</div>';
+    return;
+  }
+  resultEl.style.display='block';
+  resultEl.innerHTML = items.map(it => {
+    const already = bulkInSelected[it.id] !== undefined;
+    return `<div onclick="addBulkInItem('${it.id}')" style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:${already?'var(--green-light)':'var(--surface)'};transition:background .1s">
+      <div>
         <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
         <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 현재 ${it.qty}${it.unit||'개'}</div>
       </div>
+      <span style="font-size:12px;color:${already?'var(--green)':'var(--primary)'};font-weight:600">${already?'✓ 추가됨':'+ 추가'}</span>
+    </div>`;
+  }).join('');
+}
+
+function addBulkInItem(id){
+  if(bulkInSelected[id] !== undefined){ toast('이미 추가된 품목이에요'); return; }
+  bulkInSelected[id] = 1;
+  document.getElementById('bulkInSearch').value = '';
+  document.getElementById('bulkInSearchResult').style.display = 'none';
+  document.getElementById('bulkInSearchResult').innerHTML = '';
+  renderBulkInSelected();
+}
+
+function renderBulkInSelected(){
+  const wrap = document.getElementById('bulkInSelectedWrap');
+  const list = document.getElementById('bulkInSelectedList');
+  const cnt = document.getElementById('bulkInSelectedCount');
+  const entries = Object.entries(bulkInSelected);
+  if(!entries.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  cnt.textContent = `(${entries.length}개)`;
+  list.innerHTML = entries.map(([id, qty])=>{
+    const it = db.items.find(x=>x.id===id); if(!it) return '';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
+        <div style="font-size:11px;color:var(--text3)">현재 ${it.qty}${it.unit||'개'} → 입고 후 <span id="bulkInAfter_${it.id}" style="color:var(--green);font-weight:700">${it.qty + qty}${it.unit||'개'}</span></div>
+      </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <input type="number" min="0" placeholder="0" id="bulkIn_${it.id}"
-          style="width:70px;padding:7px 8px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
-          oninput="updateBulkInPreview('${it.id}','${it.unit||'개'}',${it.qty},this.value)">
-        <span style="font-size:12px;color:var(--text3);min-width:28px">${it.unit||'개'}</span>
-      </div>
-    </div>
-    <div id="bulkInPreview_${it.id}" style="font-size:11px;color:var(--green);text-align:right;margin-bottom:4px;display:none"></div>
-  `).join('');
-}
-function filterBulkInList(){
-  const q = document.getElementById('bulkInSearch')?.value||'';
-  renderBulkInList(q);
-}
-function openBulkUse(){
-  document.getElementById('bulkUseDate').value = tod();
-  document.getElementById('bulkUseMemo').value = '';
-  document.getElementById('bulkUseSearch').value = '';
-  useSelected = {};
-  const items = db.items;
-  if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
-  renderBulkUseList('');
-  openModal('bulkUse');
-}
-function renderBulkUseList(q){
-  const items = db.items.filter(it => !q || it.name.toLowerCase().includes(q.toLowerCase()) || (it.cat||'').toLowerCase().includes(q.toLowerCase()));
-  const el = document.getElementById('bulkUseList'); if(!el) return;
-  if(!items.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">검색 결과가 없어요</div>'; return; }
-  el.innerHTML = items.map(it => {
-    const isSelected = useSelected[it.id] !== undefined;
-    return `<div id="useRow_${it.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:${isSelected?'var(--primary-light)':'var(--surface2)'};border-radius:var(--radius-sm);margin-bottom:6px;gap:10px;cursor:pointer;border:2px solid ${isSelected?'var(--primary)':'transparent'};transition:all .15s" onclick="toggleUseItem('${it.id}')">
-      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-        <div id="useCheck_${it.id}" style="width:22px;height:22px;border-radius:50%;border:2px solid ${isSelected?'var(--primary)':'var(--border2)'};background:${isSelected?'var(--primary)':'var(--surface)'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:#fff">${isSelected?'✓':''}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
-          <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 재고 ${it.qty}${it.unit||'개'}</div>
-        </div>
-      </div>
-      <div id="useQtyWrap_${it.id}" style="display:${isSelected?'flex':'none'};align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
-        <button onclick="changeUseQty('${it.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center">−</button>
-        <input type="number" min="1" max="${it.qty}" value="${isSelected?useSelected[it.id]:1}"
-          id="useQty_${it.id}"
-          style="width:52px;padding:5px 4px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
-          oninput="useSelected['${it.id}']=parseInt(this.value)||1">
-        <button onclick="changeUseQty('${it.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--green);display:flex;align-items:center;justify-content:center">＋</button>
+        <button onclick="changeBulkInQty('${it.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--red)">−</button>
+        <input type="number" min="1" value="${qty}" id="bulkInQty_${it.id}"
+          style="width:56px;padding:5px 4px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
+          oninput="bulkInSelected['${it.id}']=Math.max(1,parseInt(this.value)||1);updateBulkInAfter('${it.id}',${it.qty})">
+        <button onclick="changeBulkInQty('${it.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--green)">＋</button>
         <span style="font-size:12px;color:var(--text3)">${it.unit||'개'}</span>
+        <button onclick="removeBulkInItem('${it.id}')" style="width:26px;height:26px;border-radius:50%;border:none;background:var(--red-light);color:var(--red);font-size:14px;cursor:pointer">×</button>
       </div>
     </div>`;
   }).join('');
 }
-function filterBulkUseList(){
-  const q = document.getElementById('bulkUseSearch')?.value||'';
-  renderBulkUseList(q);
-}
-function toggleUseItem(id){
-  const row = document.getElementById('useRow_'+id);
-  const check = document.getElementById('useCheck_'+id);
-  const qtyWrap = document.getElementById('useQtyWrap_'+id);
+
+function changeBulkInQty(id, d){
   const it = db.items.find(x=>x.id===id); if(!it) return;
-  if(useSelected[id] !== undefined){
-    delete useSelected[id];
-    row.style.borderColor = 'transparent';
-    row.style.background = 'var(--surface2)';
-    check.style.background = 'var(--surface)';
-    check.style.borderColor = 'var(--border2)';
-    check.textContent = '';
-    qtyWrap.style.display = 'none';
-  } else {
-    useSelected[id] = 1;
-    row.style.borderColor = 'var(--primary)';
-    row.style.background = 'var(--primary-light)';
-    check.style.background = 'var(--primary)';
-    check.style.borderColor = 'var(--primary)';
-    check.textContent = '✓';
-    check.style.color = '#fff';
-    qtyWrap.style.display = 'flex';
-    const input = document.getElementById('useQty_'+id);
-    if(input){ input.value=1; input.max=it.qty; }
+  const cur = bulkInSelected[id]||1;
+  const next = Math.max(1, cur+d);
+  bulkInSelected[id] = next;
+  const input = document.getElementById('bulkInQty_'+id);
+  if(input) input.value = next;
+  updateBulkInAfter(id, it.qty);
+}
+function updateBulkInAfter(id, curQty){
+  const qty = bulkInSelected[id]||1;
+  const el = document.getElementById('bulkInAfter_'+id);
+  if(el){ const it=db.items.find(x=>x.id===id); el.textContent=(curQty+qty)+(it?it.unit||'개':'개'); }
+}
+function removeBulkInItem(id){
+  delete bulkInSelected[id];
+  renderBulkInSelected();
+}
+
+function saveBulkIn(){
+  const date = document.getElementById('bulkInDate').value;
+  const memo = document.getElementById('bulkInMemo').value.trim();
+  if(!date){ toast('입고일을 선택해 주세요','error'); return; }
+  const entries = Object.entries(bulkInSelected).filter(([,qty])=>qty>0);
+  if(!entries.length){ toast('품목을 검색해서 추가해 주세요','error'); return; }
+  entries.forEach(([id,qty])=>{
+    const it=db.items.find(x=>x.id===id); if(!it) return;
+    it.qty += qty;
+    db.txns=db.txns||[];
+    db.txns.push({id:uid(),itemId:id,type:'in',qty,memo:memo||'입고등록',date,by:getW()});
+  });
+  saveLocal(); closeModal('bulkIn'); renderInv();
+  toast(`${entries.length}개 품목 입고 등록됐습니다`,'success');
+  bulkInSelected={};
+}
+
+// ── 일괄 사용 (출고) ──
+let bulkUseSelected = {}; // {itemId: qty}
+
+function openBulkUse(){
+  bulkUseSelected = {};
+  document.getElementById('bulkUseDate').value = tod();
+  document.getElementById('bulkUseMemo').value = '';
+  document.getElementById('bulkUseSearch').value = '';
+  document.getElementById('bulkUseSearchResult').style.display = 'none';
+  document.getElementById('bulkUseSearchResult').innerHTML = '';
+  renderBulkUseSelected();
+  openModal('bulkUse');
+}
+
+function filterBulkUseList(){
+  const q = document.getElementById('bulkUseSearch').value.trim();
+  const resultEl = document.getElementById('bulkUseSearchResult');
+  if(!q){ resultEl.style.display='none'; resultEl.innerHTML=''; return; }
+  const items = db.items.filter(it =>
+    it.name.toLowerCase().includes(q.toLowerCase()) ||
+    (it.cat||'').toLowerCase().includes(q.toLowerCase())
+  );
+  if(!items.length){
+    resultEl.style.display='block';
+    resultEl.innerHTML='<div style="padding:12px;text-align:center;color:var(--text3);font-size:13px">검색 결과가 없어요</div>';
+    return;
+  }
+  resultEl.style.display='block';
+  resultEl.innerHTML = items.map(it => {
+    const already = bulkUseSelected[it.id] !== undefined;
+    const noStock = it.qty <= 0;
+    return `<div onclick="${noStock?'toast("재고가 없어요","error")':('addBulkUseItem("'+it.id+'")')}" style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:${already?'var(--primary-light)':noStock?'var(--red-light)':'var(--surface)'};transition:background .1s">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:${noStock?'var(--red)':'var(--text)'}">${it.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 재고 ${it.qty}${it.unit||'개'}${noStock?' ⚠ 재고없음':''}</div>
+      </div>
+      <span style="font-size:12px;color:${already?'var(--primary)':noStock?'var(--red)':'var(--primary)'};font-weight:600">${already?'✓ 추가됨':noStock?'재고없음':'+ 추가'}</span>
+    </div>`;
+  }).join('');
+}
+
+function addBulkUseItem(id){
+  if(bulkUseSelected[id] !== undefined){ toast('이미 추가된 품목이에요'); return; }
+  bulkUseSelected[id] = 1;
+  document.getElementById('bulkUseSearch').value = '';
+  document.getElementById('bulkUseSearchResult').style.display = 'none';
+  document.getElementById('bulkUseSearchResult').innerHTML = '';
+  renderBulkUseSelected();
+}
+
+function renderBulkUseSelected(){
+  const wrap = document.getElementById('bulkUseSelectedWrap');
+  const list = document.getElementById('bulkUseSelectedList');
+  const cnt = document.getElementById('bulkUseSelectedCount');
+  const entries = Object.entries(bulkUseSelected);
+  if(!entries.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  cnt.textContent = `(${entries.length}개)`;
+  list.innerHTML = entries.map(([id,qty])=>{
+    const it = db.items.find(x=>x.id===id); if(!it) return '';
+    const after = it.qty - qty;
+    const isShort = after < 0;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;border:1.5px solid ${isShort?'var(--red)':'transparent'}">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
+        <div style="font-size:11px;color:var(--text3)">재고 ${it.qty}${it.unit||'개'} → 사용 후 <span id="bulkUseAfter_${it.id}" style="color:${isShort?'var(--red)':'var(--primary)'};font-weight:700">${after}${it.unit||'개'}${isShort?' ⚠부족':''}</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button onclick="changeBulkUseQty('${it.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--red)">−</button>
+        <input type="number" min="1" value="${qty}" id="bulkUseQty_${it.id}"
+          style="width:56px;padding:5px 4px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
+          oninput="bulkUseSelected['${it.id}']=Math.max(1,parseInt(this.value)||1);updateBulkUseAfter('${it.id}',${it.qty})">
+        <button onclick="changeBulkUseQty('${it.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--green)">＋</button>
+        <span style="font-size:12px;color:var(--text3)">${it.unit||'개'}</span>
+        <button onclick="removeBulkUseItem('${it.id}')" style="width:26px;height:26px;border-radius:50%;border:none;background:var(--red-light);color:var(--red);font-size:14px;cursor:pointer">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function changeBulkUseQty(id, d){
+  const it = db.items.find(x=>x.id===id); if(!it) return;
+  const cur = bulkUseSelected[id]||1;
+  const next = Math.max(1, cur+d);
+  bulkUseSelected[id] = next;
+  const input = document.getElementById('bulkUseQty_'+id);
+  if(input) input.value = next;
+  updateBulkUseAfter(id, it.qty);
+}
+function updateBulkUseAfter(id, curQty){
+  const qty = bulkUseSelected[id]||1;
+  const el = document.getElementById('bulkUseAfter_'+id);
+  if(el){
+    const it=db.items.find(x=>x.id===id);
+    const after=curQty-qty;
+    el.textContent=after+(it?it.unit||'개':'개')+(after<0?' ⚠부족':'');
+    el.style.color=after<0?'var(--red)':'var(--primary)';
   }
 }
-function changeUseQty(id, d){
-  const it = db.items.find(x=>x.id===id); if(!it) return;
-  const input = document.getElementById('useQty_'+id); if(!input) return;
-  const cur = parseInt(input.value)||1;
-  const next = Math.max(1, Math.min(it.qty, cur+d));
-  input.value = next;
-  useSelected[id] = next;
+function removeBulkUseItem(id){
+  delete bulkUseSelected[id];
+  renderBulkUseSelected();
 }
+
 function saveBulkUse(){
   const date = document.getElementById('bulkUseDate').value;
   const memo = document.getElementById('bulkUseMemo').value.trim();
   if(!date){ toast('사용일을 선택해 주세요','error'); return; }
-  const entries = Object.entries(useSelected).filter(([,qty])=>qty>0);
-  if(!entries.length){ toast('사용할 품목을 선택해 주세요','error'); return; }
+  const entries = Object.entries(bulkUseSelected).filter(([,qty])=>qty>0);
+  if(!entries.length){ toast('품목을 검색해서 추가해 주세요','error'); return; }
   // 재고 부족 체크
-  for(const [id, qty] of entries){
-    const it = db.items.find(x=>x.id===id);
-    if(!it) continue;
-    if(it.qty < qty){ toast(`${it.name} 재고 부족 (현재: ${it.qty}${it.unit||'개'})`, 'error'); return; }
+  for(const [id,qty] of entries){
+    const it=db.items.find(x=>x.id===id); if(!it) continue;
+    if(it.qty<qty){ toast(`${it.name} 재고 부족 (현재: ${it.qty}${it.unit||'개'})`,'error'); return; }
   }
-  // 일괄 차감
-  entries.forEach(([id, qty])=>{
-    const it = db.items.find(x=>x.id===id); if(!it) return;
+  entries.forEach(([id,qty])=>{
+    const it=db.items.find(x=>x.id===id); if(!it) return;
     it.qty -= qty;
-    db.txns = db.txns||[];
-    db.txns.push({id:uid(), itemId:id, type:'out', qty, memo: memo||'사용등록', date, by:getW()});
+    db.txns=db.txns||[];
+    db.txns.push({id:uid(),itemId:id,type:'out',qty,memo:memo||'사용등록',date,by:getW()});
   });
   saveLocal(); closeModal('bulkUse'); renderInv();
-  toast(`${entries.length}개 품목 사용 등록됐습니다`, 'success');
+  toast(`${entries.length}개 품목 사용 등록됐습니다`,'success');
+  bulkUseSelected={};
 }
-
 
 // ── 재고 부족 배너 ──
 function renderLowStockBanner(){
@@ -1589,4 +1702,68 @@ function renderTxnHistory(){
     summaryEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
       <div style="background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:10px;text-align:center">
         <div style="font-size:11px;color:var(--green);font-weight:600">📥 총 입고</div>
-        <div style="font-size:20px;font-weight:700;c
+        <div style="font-size:20px;font-weight:700;color:var(--green);font-family:monospace">${inTotal}건</div>
+      </div>
+      <div style="background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--red);font-weight:600">📤 총 사용</div>
+        <div style="font-size:20px;font-weight:700;color:var(--red);font-family:monospace">${outTotal}건</div>
+      </div>
+    </div>`;
+  } else if(summaryEl){ summaryEl.innerHTML=''; }
+
+  el.innerHTML = Object.entries(grouped).map(([date, list])=>`
+    <div style="font-size:12px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:8px">${date}</div>
+    ${list.map(t=>{
+      const it = db.items.find(x=>x.id===t.itemId);
+      const isIn = t.type==='in';
+      return `<div style="background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-left:3px solid ${isIn?'var(--green)':'var(--red)'}">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${it?it.name:'삭제된 품목'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${t.memo||''} ${t.by?'· '+t.by:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:16px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};font-family:monospace">${isIn?'+':'-'}${t.qty}${it?it.unit||'개':'개'}</div>
+          <div class="badge ${isIn?'b-green':'b-red'}" style="margin-top:3px">${isIn?'📥 입고':'📤 사용'}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+// ── Toast ──
+function toast(msg,type=''){
+  const el=document.createElement('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;
+  document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),2800);
+}
+
+// ── 시작 ──
+(function start(){
+  const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();selDate=tod();
+  isDark=localStorage.getItem('fb_dark')==='1';
+  if(isDark)document.body.classList.add('dark');
+  try{const d=localStorage.getItem('fb_db');if(d)db=Object.assign(db,JSON.parse(d));}catch{}
+
+  // Firebase SDK 미리 로드 (로그인 전에 준비)
+  if(typeof firebase==='undefined'){
+    let n=0;
+    ['https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
+     'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'].forEach(src=>{
+      const s=document.createElement('script');s.src=src;
+      s.onload=()=>{
+        if(++n===2){
+          try{
+            if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+          }catch(e){}
+        }
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  if(!tryAutoLogin()){
+    document.getElementById('loginScreen').style.display='flex';
+  }
+})();
+</script>
+</body>
+</html>
