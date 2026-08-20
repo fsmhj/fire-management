@@ -244,12 +244,40 @@ textarea{resize:vertical;min-height:80px}
 
   <!-- 재고관리 -->
   <div class="page active" id="page-inv">
+    <div id="lowStockBanner"></div>
     <div class="inv-summary" id="invSummary"></div>
-    <div class="inv-search">
-      <input type="text" id="invSearch" placeholder="🔍 품목 검색..." oninput="renderInv()">
-      <button class="btn btn-sm btn-primary" onclick="openAddItem()">+ 추가</button>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-sm btn-outline-green" style="flex:1" onclick="openBulkIn()">📥 입고 등록</button>
+      <button class="btn btn-sm btn-outline-red" style="flex:1" onclick="openBulkUse()">📤 사용 등록</button>
+      <button class="btn btn-sm btn-primary" onclick="openAddItem()">+ 품목 추가</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="inv-search" style="flex:1;margin-bottom:0">
+        <input type="text" id="invSearch" placeholder="🔍 품목 검색..." oninput="renderInv()" style="width:100%">
+      </div>
+      <button class="btn btn-sm" onclick="switchPage('txnHistory')" style="white-space:nowrap">🗂️ 이력</button>
     </div>
     <div id="invList"></div>
+  </div>
+
+  <!-- 입출고 이력 -->
+  <div class="page" id="page-txnHistory">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-sm" onclick="switchPage('inv')">← 재고로</button>
+      <div style="font-size:15px;font-weight:700;color:var(--text)">입출고 이력</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <select id="histFilterType" onchange="renderTxnHistory()" style="flex:1;min-width:100px">
+        <option value="">전체</option>
+        <option value="in">📥 입고만</option>
+        <option value="out">📤 사용만</option>
+      </select>
+      <select id="histFilterItem" onchange="renderTxnHistory()" style="flex:1;min-width:120px">
+        <option value="">전체 품목</option>
+      </select>
+      <input type="date" id="histFilterDate" onchange="renderTxnHistory()" style="flex:1;min-width:120px">
+    </div>
+    <div id="txnHistoryList"></div>
   </div>
 
   <!-- 업무일지 -->
@@ -260,6 +288,7 @@ textarea{resize:vertical;min-height:80px}
 
   <!-- 일정 -->
   <div class="page" id="page-schedule">
+    <div id="ddayBanner"></div>
     <div class="card" style="padding:12px">
       <div class="calendar-header">
         <button class="btn btn-sm" onclick="moveMonth(-1)">‹</button>
@@ -535,6 +564,49 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div></div>
 
+
+<!-- 모달: 일괄 입고 -->
+<div class="modal-overlay" id="modal-bulkIn"><div class="modal" style="max-height:90vh">
+  <div class="modal-handle"></div>
+  <div class="modal-title">📥 입고 등록</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:14px">입고 수량을 입력하면 기존 수량에 자동으로 더해져요</div>
+  <div class="form-group">
+    <label class="form-label">입고일</label>
+    <input type="date" id="bulkInDate">
+  </div>
+  <div class="form-group">
+    <label class="form-label">메모 (납품업체, 발주번호 등)</label>
+    <input type="text" id="bulkInMemo" placeholder="예: OO업체 납품">
+  </div>
+  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">품목별 입고 수량</div>
+  <div id="bulkInList" style="max-height:340px;overflow-y:auto"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('bulkIn')">취소</button>
+    <button class="btn btn-green" onclick="saveBulkIn()">📥 입고 등록</button>
+  </div>
+</div></div>
+
+<!-- 모달: 일괄 사용 -->
+<div class="modal-overlay" id="modal-bulkUse"><div class="modal" style="max-height:90vh">
+  <div class="modal-handle"></div>
+  <div class="modal-title">📤 사용 등록</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:14px">사용한 품목과 수량을 선택하면 재고에서 자동으로 차감돼요</div>
+  <div class="form-group">
+    <label class="form-label">사용일</label>
+    <input type="date" id="bulkUseDate">
+  </div>
+  <div class="form-group">
+    <label class="form-label">작업 내용</label>
+    <input type="text" id="bulkUseMemo" placeholder="예: 3층 스프링클러 헤드 교체">
+  </div>
+  <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">사용한 품목 선택</div>
+  <div id="bulkUseList" style="max-height:340px;overflow-y:auto"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('bulkUse')">취소</button>
+    <button class="btn btn-outline-red" onclick="saveBulkUse()">📤 사용 등록</button>
+  </div>
+</div></div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -721,6 +793,7 @@ function setSyncStatus(s){document.getElementById('syncDot').className='sync-dot
 
 // ── 페이지 ──
 function switchPage(p){
+  if(p==='txnHistory'){curPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));document.getElementById('fabBtn').style.display='none';renderTxnHistory();return;}
   if(!isAdmin&&!myTabs.includes(p)){toast('접근 권한이 없습니다','error');return;}
   curPage=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
@@ -738,6 +811,7 @@ function renderCurrent(){
   if(curPage==='schedule'){renderCalendar();renderScheduleList();}
   if(curPage==='memo')renderMemo();
   if(curPage==='settings')renderSettings();
+  if(curPage==='txnHistory'){renderTxnHistory();}
 }
 function fabAction(){
   if(curPage==='inv')openAddItem();
@@ -815,6 +889,7 @@ function savePwSettings(){
 
 // ── 재고 (계층) ──
 function renderInv(){
+  renderLowStockBanner();
   const q=document.getElementById('invSearch').value.trim().toLowerCase();
   const total=db.items.length,low=db.items.filter(it=>it.min>0&&it.qty<=it.min).length;
   document.getElementById('invSummary').innerHTML=`
@@ -1022,6 +1097,7 @@ function setJF(f){curJF=f;renderJournal();}
 // ── 일정 ──
 const catColor={점검:'var(--red)',교육:'var(--primary)',회의:'var(--green)',공사:'var(--amber)',기타:'var(--purple)'};
 function renderCalendar(){
+  renderDdayBanner();
   document.getElementById('calMonth').textContent=`${calYear}년 ${calMonth+1}월`;
   const first=new Date(calYear,calMonth,1).getDay(),last=new Date(calYear,calMonth+1,0).getDate();
   const schMap={};db.schedules.forEach(s=>{(schMap[s.date]=schMap[s.date]||[]).push(s);});
@@ -1043,6 +1119,7 @@ function renderCalendar(){
 function selectDate(d){selDate=d;renderCalendar();renderScheduleList();}
 function moveMonth(d){calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 function renderScheduleList(){
+  renderDdayBanner();
   document.getElementById('selectedDateLabel').textContent=selDate?`${selDate} 일정`:'일정';
   const list=db.schedules.filter(s=>!selDate||s.date===selDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   if(!list.length){document.getElementById('scheduleList').innerHTML='<div class="empty" style="padding:24px"><div>이 날 일정이 없어요</div></div>';return;}
@@ -1246,6 +1323,249 @@ function addLocSetting(){
 }
 function removeLoc(val){
   db.locations=(db.locations||[]).filter(x=>x!==val);saveLocal();renderSettings();
+}
+
+
+// ── 일괄 입고 ──
+function openBulkIn(){
+  document.getElementById('bulkInDate').value = tod();
+  document.getElementById('bulkInMemo').value = '';
+  const items = db.items;
+  if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
+  document.getElementById('bulkInList').innerHTML = items.map(it => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;gap:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 현재 ${it.qty}${it.unit||'개'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <input type="number" min="0" placeholder="0"
+          id="bulkIn_${it.id}"
+          style="width:70px;padding:7px 8px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
+          oninput="updateBulkInPreview('${it.id}','${it.unit||'개'}',${it.qty},this.value)">
+        <span style="font-size:12px;color:var(--text3);min-width:28px">${it.unit||'개'}</span>
+      </div>
+    </div>
+    <div id="bulkInPreview_${it.id}" style="font-size:11px;color:var(--green);text-align:right;margin-bottom:4px;display:none"></div>
+  `).join('');
+  openModal('bulkIn');
+}
+function updateBulkInPreview(id, unit, curQty, val){
+  const qty = parseInt(val)||0;
+  const el = document.getElementById('bulkInPreview_'+id);
+  if(!el) return;
+  if(qty > 0){
+    el.style.display='block';
+    el.textContent = `✓ ${curQty} + ${qty} = ${curQty+qty}${unit}`;
+  } else {
+    el.style.display='none';
+  }
+}
+function saveBulkIn(){
+  const date = document.getElementById('bulkInDate').value;
+  const memo = document.getElementById('bulkInMemo').value.trim();
+  if(!date){ toast('입고일을 선택해 주세요','error'); return; }
+  let count = 0;
+  db.items.forEach(it => {
+    const input = document.getElementById('bulkIn_'+it.id);
+    if(!input) return;
+    const qty = parseInt(input.value)||0;
+    if(qty <= 0) return;
+    it.qty += qty;
+    db.txns = db.txns||[];
+    db.txns.push({id:uid(), itemId:it.id, type:'in', qty, memo: memo||'일괄입고', date, by:getW()});
+    count++;
+  });
+  if(!count){ toast('입고 수량을 1개 이상 입력해 주세요','error'); return; }
+  saveLocal(); closeModal('bulkIn'); renderInv();
+  toast(`${count}개 품목 입고 등록됐습니다`, 'success');
+}
+
+// ── 일괄 사용 (출고) ──
+let useSelected = {}; // {itemId: qty}
+function openBulkUse(){
+  document.getElementById('bulkUseDate').value = tod();
+  document.getElementById('bulkUseMemo').value = '';
+  useSelected = {};
+  const items = db.items;
+  if(!items.length){ toast('등록된 품목이 없어요','error'); return; }
+  document.getElementById('bulkUseList').innerHTML = items.map(it => `
+    <div id="useRow_${it.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;gap:10px;cursor:pointer;border:2px solid transparent;transition:border .15s" onclick="toggleUseItem('${it.id}')">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="useCheck_${it.id}" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
+          <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 재고 ${it.qty}${it.unit||'개'}</div>
+        </div>
+      </div>
+      <div id="useQtyWrap_${it.id}" style="display:none;align-items:center;gap:6px;flex-shrink:0" onclick="event.stopPropagation()">
+        <button onclick="changeUseQty('${it.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--red);display:flex;align-items:center;justify-content:center">−</button>
+        <input type="number" min="1" max="${it.qty}" value="1"
+          id="useQty_${it.id}"
+          style="width:52px;padding:5px 4px;border:1.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-weight:700;text-align:center;background:var(--surface);color:var(--text);font-family:monospace"
+          oninput="useSelected['${it.id}']=parseInt(this.value)||1">
+        <button onclick="changeUseQty('${it.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface);font-size:16px;cursor:pointer;color:var(--green);display:flex;align-items:center;justify-content:center">＋</button>
+        <span style="font-size:12px;color:var(--text3)">${it.unit||'개'}</span>
+      </div>
+    </div>
+  `).join('');
+  openModal('bulkUse');
+}
+function toggleUseItem(id){
+  const row = document.getElementById('useRow_'+id);
+  const check = document.getElementById('useCheck_'+id);
+  const qtyWrap = document.getElementById('useQtyWrap_'+id);
+  const it = db.items.find(x=>x.id===id); if(!it) return;
+  if(useSelected[id] !== undefined){
+    delete useSelected[id];
+    row.style.borderColor = 'transparent';
+    row.style.background = 'var(--surface2)';
+    check.style.background = 'var(--surface)';
+    check.style.borderColor = 'var(--border2)';
+    check.textContent = '';
+    qtyWrap.style.display = 'none';
+  } else {
+    useSelected[id] = 1;
+    row.style.borderColor = 'var(--primary)';
+    row.style.background = 'var(--primary-light)';
+    check.style.background = 'var(--primary)';
+    check.style.borderColor = 'var(--primary)';
+    check.textContent = '✓';
+    check.style.color = '#fff';
+    qtyWrap.style.display = 'flex';
+    const input = document.getElementById('useQty_'+id);
+    if(input){ input.value=1; input.max=it.qty; }
+  }
+}
+function changeUseQty(id, d){
+  const it = db.items.find(x=>x.id===id); if(!it) return;
+  const input = document.getElementById('useQty_'+id); if(!input) return;
+  const cur = parseInt(input.value)||1;
+  const next = Math.max(1, Math.min(it.qty, cur+d));
+  input.value = next;
+  useSelected[id] = next;
+}
+function saveBulkUse(){
+  const date = document.getElementById('bulkUseDate').value;
+  const memo = document.getElementById('bulkUseMemo').value.trim();
+  if(!date){ toast('사용일을 선택해 주세요','error'); return; }
+  const entries = Object.entries(useSelected).filter(([,qty])=>qty>0);
+  if(!entries.length){ toast('사용할 품목을 선택해 주세요','error'); return; }
+  // 재고 부족 체크
+  for(const [id, qty] of entries){
+    const it = db.items.find(x=>x.id===id);
+    if(!it) continue;
+    if(it.qty < qty){ toast(`${it.name} 재고 부족 (현재: ${it.qty}${it.unit||'개'})`, 'error'); return; }
+  }
+  // 일괄 차감
+  entries.forEach(([id, qty])=>{
+    const it = db.items.find(x=>x.id===id); if(!it) return;
+    it.qty -= qty;
+    db.txns = db.txns||[];
+    db.txns.push({id:uid(), itemId:id, type:'out', qty, memo: memo||'사용등록', date, by:getW()});
+  });
+  saveLocal(); closeModal('bulkUse'); renderInv();
+  toast(`${entries.length}개 품목 사용 등록됐습니다`, 'success');
+}
+
+
+// ── 재고 부족 배너 ──
+function renderLowStockBanner(){
+  const el = document.getElementById('lowStockBanner');
+  if(!el) return;
+  const lowItems = db.items.filter(it => it.min > 0 && it.qty <= it.min);
+  if(!lowItems.length){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div style="background:var(--red-light);border:1.5px solid var(--red-border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ 재고 부족 품목 ${lowItems.length}개</div>
+      ${lowItems.map(it=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--red-border);font-size:12px">
+          <span style="color:var(--text2);font-weight:600">${it.name}</span>
+          <span style="color:var(--red);font-weight:700">${it.qty}${it.unit||'개'} / 최소 ${it.min}${it.unit||'개'}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── D-day 배너 ──
+function renderDdayBanner(){
+  const el = document.getElementById('ddayBanner');
+  if(!el) return;
+  const todStr = tod();
+  const upcoming = db.schedules
+    .filter(s => s.date >= todStr)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const ongoing = upcoming.find(s => s.date === todStr);
+  const next = upcoming.find(s => s.date > todStr);
+  const target = ongoing || next;
+  if(!target){ el.innerHTML=''; return; }
+  const diff = Math.ceil((new Date(target.date) - new Date(todStr)) / 86400000);
+  const isToday = diff === 0;
+  const isUrgent = diff <= 7;
+  const bg = isToday ? 'var(--red-light)' : isUrgent ? 'var(--amber-light)' : 'var(--primary-light)';
+  const border = isToday ? 'var(--red-border)' : isUrgent ? 'var(--amber-border)' : 'var(--primary-border)';
+  const color = isToday ? 'var(--red)' : isUrgent ? 'var(--amber)' : 'var(--primary)';
+  const label = isToday ? '📅 오늘 일정' : `📅 D-${diff}`;
+  el.innerHTML = `
+    <div style="background:${bg};border:1.5px solid ${border};border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="selectDate('${target.date}')">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:${color};margin-bottom:3px">${label}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">${target.title}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${target.date} ${target.time||''} · ${target.cat||'기타'}</div>
+      </div>
+      <div style="font-size:26px;font-weight:800;font-family:monospace;color:${color}">${isToday?'TODAY':'D-'+diff}</div>
+    </div>`;
+}
+
+// ── 입출고 이력 ──
+function renderTxnHistory(){
+  const typeF = document.getElementById('histFilterType')?.value||'';
+  const itemF = document.getElementById('histFilterItem')?.value||'';
+  const dateF = document.getElementById('histFilterDate')?.value||'';
+
+  // 품목 필터 옵션 채우기
+  const sel = document.getElementById('histFilterItem');
+  if(sel && sel.options.length <= 1){
+    db.items.forEach(it=>{
+      const opt = document.createElement('option');
+      opt.value = it.id; opt.textContent = it.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  let txns = [...(db.txns||[])];
+  if(typeF) txns = txns.filter(t=>t.type===typeF);
+  if(itemF) txns = txns.filter(t=>t.itemId===itemF);
+  if(dateF) txns = txns.filter(t=>t.date===dateF);
+  txns.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id.localeCompare(a.id));
+
+  const el = document.getElementById('txnHistoryList');
+  if(!el) return;
+  if(!txns.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🗂️</div><div>이력이 없어요</div></div>';
+    return;
+  }
+
+  // 날짜별 그룹
+  const grouped = {};
+  txns.forEach(t=>{ (grouped[t.date||'날짜없음']=grouped[t.date||'날짜없음']||[]).push(t); });
+
+  el.innerHTML = Object.entries(grouped).map(([date, list])=>`
+    <div style="font-size:12px;font-weight:700;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:8px">${date}</div>
+    ${list.map(t=>{
+      const it = db.items.find(x=>x.id===t.itemId);
+      const isIn = t.type==='in';
+      return `<div style="background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-left:3px solid ${isIn?'var(--green)':'var(--red)'}">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${it?it.name:'삭제된 품목'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${t.memo||''} ${t.by?'· '+t.by:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:16px;font-weight:700;color:${isIn?'var(--green)':'var(--red)'};font-family:monospace">${isIn?'+':'-'}${t.qty}${it?it.unit||'개':'개'}</div>
+          <div class="badge ${isIn?'b-green':'b-red'}" style="margin-top:3px">${isIn?'📥 입고':'📤 사용'}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  `).join('');
 }
 
 // ── Toast ──
