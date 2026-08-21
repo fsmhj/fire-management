@@ -242,8 +242,37 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 
+  <!-- 메인보드 -->
+  <div class="page active" id="page-home">
+    <div id="homeGreeting" style="margin-bottom:16px"></div>
+    <!-- 부족 품목 -->
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">⚠️ 부족 품목</div>
+        <button class="btn btn-xs" onclick="switchPage('inv')">재고 탭 →</button>
+      </div>
+      <div id="homeLowStock" style="padding:10px"></div>
+    </div>
+    <!-- 오늘 일정 -->
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">📅 오늘·예정 일정</div>
+        <button class="btn btn-xs" onclick="switchPage('schedule')">일정 탭 →</button>
+      </div>
+      <div id="homeSchedule" style="padding:10px"></div>
+    </div>
+    <!-- 최근 업무일지 -->
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px">📝 최근 업무일지</div>
+        <button class="btn btn-xs" onclick="switchPage('journal')">업무일지 탭 →</button>
+      </div>
+      <div id="homeJournal" style="padding:10px"></div>
+    </div>
+  </div>
+
   <!-- 재고관리 -->
-  <div class="page active" id="page-inv">
+  <div class="page" id="page-inv">
     <div id="lowStockBanner"></div>
     <div class="inv-summary" id="invSummary"></div>
     <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -294,7 +323,7 @@ textarea{resize:vertical;min-height:80px}
   <!-- 일정 -->
   <div class="page" id="page-schedule">
     <div id="ddayBanner"></div>
-    <div class="card" style="padding:12px">
+    <div class="card" style="padding:12px;margin-bottom:0;border-radius:var(--radius) var(--radius) 0 0">
       <div class="calendar-header">
         <button class="btn btn-sm" onclick="moveMonth(-1)">‹</button>
         <div class="cal-month" id="calMonth"></div>
@@ -302,8 +331,20 @@ textarea{resize:vertical;min-height:80px}
       </div>
       <div class="calendar-grid" id="calGrid"></div>
     </div>
-    <div class="selected-date-label" id="selectedDateLabel"></div>
-    <div id="scheduleList"></div>
+    <!-- 탭: 선택일 / 이번달 전체 -->
+    <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);margin-bottom:12px;overflow:hidden">
+      <button id="schTabDay" onclick="switchSchTab('day')" style="flex:1;padding:10px;border:none;background:var(--primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif">📅 선택한 날</button>
+      <button id="schTabMonth" onclick="switchSchTab('month')" style="flex:1;padding:10px;border:none;background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-left:1px solid var(--border)">📋 이번 달 전체</button>
+    </div>
+    <!-- 선택일 일정 -->
+    <div id="schViewDay">
+      <div class="selected-date-label" id="selectedDateLabel"></div>
+      <div id="scheduleList"></div>
+    </div>
+    <!-- 이번달 전체 일정 -->
+    <div id="schViewMonth" style="display:none">
+      <div id="monthScheduleList"></div>
+    </div>
   </div>
 
   <!-- 메모 -->
@@ -642,6 +683,7 @@ const FIREBASE_CONFIG={
 const DEFAULT_USER_PW  = 'fire1234';   // 일반 비밀번호
 const DEFAULT_ADMIN_PW = 'admin9999';  // 관리자 비밀번호
 const ALL_TABS = [
+  {id:'home',label:'🏠 메인보드'},
   {id:'inv',label:'📦 재고'},
   {id:'journal',label:'📝 업무일지'},
   {id:'schedule',label:'📅 일정'},
@@ -650,7 +692,7 @@ const ALL_TABS = [
 ];
 
 // ── 상태 ──
-let curPage='inv',curJF='전체',curMemoF='전체',curJrnType='hospital';
+let curPage='home',curJF='전체',curMemoF='전체',curJrnType='hospital';
 let calYear,calMonth,selDate;
 let openCats={};
 let db={
@@ -689,7 +731,7 @@ function doLogin(){
     } else if(pw===userPw){
       isAdmin=false;userName=name;
       const member=db.members.find(m=>m.name===name);
-      myTabs=member?member.tabs:['inv','journal','schedule','memo'];
+      myTabs=member?member.tabs:['home','inv','journal','schedule','memo'];
       enterApp();
     } else {
       err.textContent='비밀번호가 올바르지 않습니다';err.style.display='block';
@@ -815,22 +857,24 @@ function switchPage(p){
   curPage=p;
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==='page-'+p));
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===p));
-  const hideFab=['settings'];
+  const hideFab=['settings','home'];
   document.getElementById('fabBtn').style.display=hideFab.includes(p)?'none':'flex';
   renderCurrent();
 }
 function renderAll(){
-  renderInv();renderJournal();renderCalendar();renderScheduleList();renderMemo();renderSettings();
+  renderHome();renderInv();renderJournal();renderCalendar();renderScheduleList();renderMemo();renderSettings();
 }
 function renderCurrent(){
   if(curPage==='inv')renderInv();
   if(curPage==='journal')renderJournal();
   if(curPage==='schedule'){renderCalendar();renderScheduleList();}
+  if(curPage==='home')renderHome();
   if(curPage==='memo')renderMemo();
   if(curPage==='settings')renderSettings();
   if(curPage==='txnHistory'){renderTxnHistory();}
 }
 function fabAction(){
+  if(curPage==='home')return;
   if(curPage==='inv')openAddItem();
   if(curPage==='journal')openAddJournal();
   if(curPage==='schedule')openAddSchedule();
@@ -1728,6 +1772,136 @@ function renderTxnHistory(){
       </div>`;
     }).join('')}
   `).join('');
+}
+
+
+// ── 메인보드 ──
+function renderHome(){
+  const todStr = tod();
+  const hour = new Date().getHours();
+  const greet = hour<12?'좋은 아침이에요 ☀️':hour<18?'안녕하세요 😊':'수고하셨어요 🌙';
+  const greetEl = document.getElementById('homeGreeting');
+  if(greetEl) greetEl.innerHTML=`
+    <div style="background:var(--primary);border-radius:var(--radius);padding:16px 18px;color:#fff">
+      <div style="font-size:13px;opacity:.85;margin-bottom:4px">${greet}</div>
+      <div style="font-size:18px;font-weight:700">${userName||'팀원'}님 👋</div>
+      <div style="font-size:12px;opacity:.75;margin-top:4px">${todStr}</div>
+    </div>`;
+
+  // 부족 품목
+  const lowEl = document.getElementById('homeLowStock');
+  if(lowEl){
+    const lows = db.items.filter(it=>it.min>0&&it.qty<=it.min);
+    if(!lows.length){
+      lowEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--green);font-size:13px">✓ 모든 품목 재고 정상</div>';
+    } else {
+      lowEl.innerHTML = lows.map(it=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text);font-weight:600">${it.name}</span>
+          <span style="font-size:12px;color:var(--red);font-weight:700">${it.qty}${it.unit||'개'} / 최소 ${it.min}${it.unit||'개'}</span>
+        </div>`).join('');
+    }
+  }
+
+  // 오늘 + D-7 이내 일정
+  const schEl = document.getElementById('homeSchedule');
+  if(schEl){
+    const upcoming = db.schedules
+      .filter(s=>s.date>=todStr)
+      .sort((a,b)=>a.date.localeCompare(b.date))
+      .slice(0,5);
+    if(!upcoming.length){
+      schEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px">예정된 일정이 없어요</div>';
+    } else {
+      schEl.innerHTML = upcoming.map(s=>{
+        const diff = Math.ceil((new Date(s.date)-new Date(todStr))/86400000);
+        const isToday = diff===0;
+        const color = isToday?'var(--red)':diff<=3?'var(--amber)':'var(--primary)';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage('schedule')">
+          <div style="min-width:44px;text-align:center;font-size:12px;font-weight:800;color:${color};font-family:monospace">${isToday?'TODAY':'D-'+diff}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${s.title}</div>
+            <div style="font-size:11px;color:var(--text3)">${s.date} ${s.time||''} · ${s.cat||'기타'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // 최근 업무일지 3개
+  const jrnEl = document.getElementById('homeJournal');
+  if(jrnEl){
+    const recent = [...db.journals].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,3);
+    if(!recent.length){
+      jrnEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px">최근 업무일지가 없어요</div>';
+    } else {
+      jrnEl.innerHTML = recent.map(j=>`
+        <div style="padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage('journal')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="journal-place ${j.placeType||'hospital'}" style="font-size:11px;padding:2px 8px">${j.place}</span>
+            <span style="font-size:11px;color:var(--text3)">${j.date} · ${j.by||''}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${j.content}</div>
+        </div>`).join('');
+    }
+  }
+}
+
+// ── 일정 탭 전환 (선택일 / 이번달 전체) ──
+let curSchTab = 'day';
+function switchSchTab(tab){
+  curSchTab = tab;
+  const dayBtn = document.getElementById('schTabDay');
+  const monthBtn = document.getElementById('schTabMonth');
+  const dayView = document.getElementById('schViewDay');
+  const monthView = document.getElementById('schViewMonth');
+  if(tab==='day'){
+    dayBtn.style.background='var(--primary)';dayBtn.style.color='#fff';
+    monthBtn.style.background='var(--surface)';monthBtn.style.color='var(--text2)';
+    dayView.style.display='block';monthView.style.display='none';
+  } else {
+    monthBtn.style.background='var(--primary)';monthBtn.style.color='#fff';
+    dayBtn.style.background='var(--surface)';dayBtn.style.color='var(--text2)';
+    dayView.style.display='none';monthView.style.display='block';
+    renderMonthSchedule();
+  }
+}
+function renderMonthSchedule(){
+  const el = document.getElementById('monthScheduleList'); if(!el) return;
+  const start = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const end   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-31`;
+  const list  = db.schedules.filter(s=>s.date>=start&&s.date<=end).sort((a,b)=>a.date.localeCompare(b.date)||( a.time||'').localeCompare(b.time||''));
+  if(!list.length){
+    el.innerHTML='<div class="empty" style="padding:32px"><div class="empty-icon">📅</div><div>이번 달 일정이 없어요</div></div>';
+    return;
+  }
+  // 날짜별 그룹
+  const grouped={};
+  list.forEach(s=>{(grouped[s.date]=grouped[s.date]||[]).push(s);});
+  el.innerHTML = Object.entries(grouped).map(([date,items])=>{
+    const diff = Math.ceil((new Date(date)-new Date(tod()))/86400000);
+    const isPast = diff < 0;
+    const isToday = diff === 0;
+    return `
+      <div style="font-size:12px;font-weight:700;color:${isToday?'var(--primary)':isPast?'var(--text3)':'var(--text2)'};padding:8px 4px 4px;border-bottom:2px solid ${isToday?'var(--primary)':'var(--border)'};margin-bottom:6px;display:flex;align-items:center;gap:8px">
+        ${date} ${isToday?'<span style="background:var(--primary);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px">오늘</span>':isPast?'<span style="color:var(--text3);font-size:11px">지남</span>':`<span style="color:var(--primary);font-size:11px;font-weight:800">D-${diff}</span>`}
+      </div>
+      ${items.map(s=>`
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 6px;background:var(--surface);border-radius:var(--radius-sm);margin-bottom:6px;box-shadow:var(--shadow);opacity:${isPast?.6:1};border-left:3px solid ${catColor[s.cat]||'var(--primary)'}">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${s.title}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+              <span>${s.time||'종일'}</span>
+              <span class="badge b-gray">${s.cat||'기타'}</span>
+              ${s.memo?`<span>${s.memo}</span>`:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <button class="btn btn-xs" onclick="editSchedule('${s.id}')">수정</button>
+            <button class="btn btn-xs btn-outline-red" onclick="deleteSchedule('${s.id}');renderMonthSchedule()">삭제</button>
+          </div>
+        </div>`).join('')}`;
+  }).join('');
 }
 
 // ── Toast ──
