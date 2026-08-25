@@ -204,6 +204,13 @@ textarea{resize:vertical;min-height:80px}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @media(min-width:540px){
   .modal{border-radius:var(--radius)}.modal-overlay{align-items:center}
+}
+@media(min-width:900px){
+  .page{max-width:1200px;margin:0 auto;padding:20px 28px}
+  .header .logo,.header .header-right{max-width:1200px}
+  .bottom-nav{max-width:1200px;left:50%;transform:translateX(-50%)}
+  .fab{right:calc(50% - 600px + 24px)}
+}
   .page,.login-box{max-width:540px}.page{margin:0 auto}
   .bottom-nav{max-width:540px;left:50%;transform:translateX(-50%)}
   .fab{right:calc(50% - 270px + 20px)}
@@ -244,7 +251,7 @@ textarea{resize:vertical;min-height:80px}
 
   <!-- 메인보드 -->
   <div class="page active" id="page-home">
-    <div id="homeGreeting" style="margin-bottom:16px"></div>
+    <div id="homeGreeting" style="margin-bottom:14px"></div>
     <!-- 부족 품목 -->
     <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
       <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
@@ -335,48 +342,32 @@ textarea{resize:vertical;min-height:80px}
   <!-- 일정 -->
   <div class="page" id="page-schedule">
     <div id="ddayBanner"></div>
-
-    <!-- 탭: 선택일 / 이번달 전체 -->
-    <div style="display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:12px">
-      <button id="schTabDay" onclick="switchSchTab('day')" style="flex:1;padding:9px;border:none;background:var(--primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif">📅 날짜별</button>
-      <button id="schTabMonth" onclick="switchSchTab('month')" style="flex:1;padding:9px;border:none;background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;border-left:1px solid var(--border)">📋 이번 달 전체</button>
-    </div>
-
-    <!-- 날짜별 뷰 -->
-    <div id="schViewDay">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
-        <!-- 왼쪽: 달력 -->
-        <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <button class="btn btn-sm" onclick="moveMonth(-1)" style="padding:4px 8px;font-size:12px">‹</button>
-            <div class="cal-month" id="calMonth" style="font-size:13px"></div>
-            <button class="btn btn-sm" onclick="moveMonth(1)" style="padding:4px 8px;font-size:12px">›</button>
-          </div>
-          <div class="calendar-grid" id="calGrid" style="gap:1px"></div>
+    <!-- 달력(좌) + 이번달 전체 일정(우) 통합 2열 -->
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start">
+      <!-- 왼쪽: 달력 고정 -->
+      <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;min-width:260px;max-width:320px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <button class="btn btn-sm" onclick="moveMonth(-1)" style="padding:4px 10px">‹</button>
+          <div class="cal-month" id="calMonth" style="font-size:14px;font-weight:700"></div>
+          <button class="btn btn-sm" onclick="moveMonth(1)" style="padding:4px 10px">›</button>
         </div>
-        <!-- 오른쪽: 선택일 일정 -->
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div class="selected-date-label" id="selectedDateLabel"></div>
-            <button class="btn btn-primary btn-sm" onclick="openAddSchedule()" style="font-size:11px;padding:4px 10px">+추가</button>
-          </div>
-          <div id="scheduleList"></div>
+        <div class="calendar-grid" id="calGrid"></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <button class="btn btn-primary btn-sm" onclick="openAddSchedule()" style="width:100%;justify-content:center">+ 일정 추가</button>
         </div>
       </div>
-    </div>
-
-    <!-- 이번 달 전체 뷰 -->
-    <div id="schViewMonth" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="btn btn-sm" onclick="moveMonthAndRefresh(-1)">‹</button>
-          <div id="calMonthMonth" style="font-size:14px;font-weight:700;color:var(--text)"></div>
-          <button class="btn btn-sm" onclick="moveMonthAndRefresh(1)">›</button>
+      <!-- 오른쪽: 이번달 전체 일정 목록 (날짜별 그룹) -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:700;color:var(--text)" id="schMonthTitle"></div>
+          <div class="selected-date-label" id="selectedDateLabel" style="font-size:12px"></div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openAddSchedule()">+ 일정 추가</button>
+        <div id="monthScheduleList"></div>
       </div>
-      <div id="monthScheduleList"></div>
     </div>
+    <!-- 숨겨진 요소들 (기존 함수 호환용) -->
+    <div id="schViewDay" style="display:none"><div id="scheduleList"></div></div>
+    <div id="schViewMonth" style="display:none"></div>
   </div>
 
   <!-- 메모 -->
@@ -751,21 +742,43 @@ textarea{resize:vertical;min-height:80px}
     </select>
   </div>
   <div class="form-group">
-    <label class="form-label">보수 현황</label>
-    <select id="insp_repair">
-      <option value="">-</option>
-      <option value="자체점검">🔧 자체점검</option>
-      <option value="업체보수">🏗️ 업체보수</option>
-      <option value="완료">✅ 완료</option>
-    </select>
-  </div>
-  <div class="form-group">
     <label class="form-label">메모</label>
     <textarea id="insp_memo" placeholder="특이사항, 준비사항 등..." style="min-height:70px"></textarea>
   </div>
   <div class="modal-footer">
     <button class="btn" onclick="closeModal('addInspection')">취소</button>
     <button class="btn btn-primary" onclick="saveInspection()">저장</button>
+  </div>
+</div></div>
+
+
+<!-- 모달: 보완사항 등록 -->
+<div class="modal-overlay" id="modal-addRemedy"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="remedyModalTitle">보완사항 등록</div>
+  <input type="hidden" id="rem_id">
+  <input type="hidden" id="rem_inspId">
+  <input type="hidden" id="rem_bld">
+  <div class="form-group">
+    <label class="form-label">보완 내용 *</label>
+    <textarea id="rem_content" placeholder="위치, 내용을 입력해 주세요..." style="min-height:80px"></textarea>
+  </div>
+  <div class="form-group">
+    <label class="form-label">처리 방법</label>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="rem_s_자체보수" onclick="selectRemedyStatus('자체보수')" style="flex:1">🔧 자체보수</button>
+      <button class="btn" id="rem_s_업체보수" onclick="selectRemedyStatus('업체보수')" style="flex:1">🏗️ 업체보수</button>
+      <button class="btn" id="rem_s_완료" onclick="selectRemedyStatus('완료')" style="flex:1">✅ 완료</button>
+    </div>
+    <input type="hidden" id="rem_status">
+  </div>
+  <div class="form-group">
+    <label class="form-label">메모</label>
+    <input type="text" id="rem_memo" placeholder="업체명, 비용, 특이사항 등">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addRemedy')">취소</button>
+    <button class="btn btn-primary" onclick="saveRemedy()">저장</button>
   </div>
 </div></div>
 
@@ -807,6 +820,7 @@ let db={
   hospitals:['원주세브란스병원','원주기독병원'],
   univs:['연세대학교 미래캠퍼스','상지대학교'],
   inspections:[],
+  remedies:[],
   userPw:DEFAULT_USER_PW,
   adminPw:DEFAULT_ADMIN_PW,
   units:['EA','개','본','롤','박스','세트','kg','L'],
@@ -969,7 +983,7 @@ function switchPage(p){
   renderCurrent();
 }
 function renderAll(){
-  renderHome();renderInv();renderJournal();renderCalendar();renderScheduleList();renderMemo();renderSettings();
+  renderHome();renderInv();renderJournal();renderCalendar();renderMonthSchedule();renderMemo();renderSettings();
   if(document.getElementById('jonghamContent'))renderBuilding('jongham');
   if(document.getElementById('seomigamContent'))renderBuilding('seomigam');
 }
@@ -1270,6 +1284,7 @@ function setJF(f){curJF=f;renderJournal();}
 const catColor={점검:'var(--red)',교육:'var(--primary)',회의:'var(--green)',공사:'var(--amber)',기타:'var(--purple)'};
 function renderCalendar(){
   renderDdayBanner();
+  renderMonthSchedule();
   document.getElementById('calMonth').textContent=`${calYear}년 ${calMonth+1}월`;
   const first=new Date(calYear,calMonth,1).getDay(),last=new Date(calYear,calMonth+1,0).getDate();
   const schMap={};db.schedules.forEach(s=>{(schMap[s.date]=schMap[s.date]||[]).push(s);});
@@ -1289,7 +1304,7 @@ function renderCalendar(){
   document.getElementById('calGrid').innerHTML=h;
 }
 function selectDate(d){selDate=d;renderCalendar();renderScheduleList();}
-function moveMonth(d){calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+function moveMonth(d){calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCalendar();renderMonthSchedule();}
 function renderScheduleList(){
   renderDdayBanner();
   document.getElementById('selectedDateLabel').textContent=selDate?`${selDate} 일정`:'일정';
@@ -1893,10 +1908,15 @@ function renderHome(){
   const greet = hour<12?'좋은 아침이에요 ☀️':hour<18?'안녕하세요 😊':'수고하셨어요 🌙';
   const greetEl = document.getElementById('homeGreeting');
   if(greetEl) greetEl.innerHTML=`
-    <div style="background:var(--primary);border-radius:var(--radius);padding:16px 18px;color:#fff">
-      <div style="font-size:13px;opacity:.85;margin-bottom:4px">${greet}</div>
-      <div style="font-size:18px;font-weight:700">${userName||'팀원'}님 👋</div>
-      <div style="font-size:12px;opacity:.75;margin-top:4px">${todStr}</div>
+    <div style="background:var(--primary);border-radius:var(--radius);padding:14px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:12px;opacity:.85;margin-bottom:3px">${greet}</div>
+        <div style="font-size:17px;font-weight:700">${userName||'팀원'}님 👋</div>
+      </div>
+      <div style="font-size:13px;opacity:.75;text-align:right">
+        <div>${todStr}</div>
+        <div style="margin-top:3px;font-size:11px">소방업무공유</div>
+      </div>
     </div>`;
 
   // 부족 품목
@@ -2013,39 +2033,48 @@ function moveMonthAndRefresh(d){
 }
 function renderMonthSchedule(){
   const el = document.getElementById('monthScheduleList'); if(!el) return;
+  // 월 타이틀 업데이트
+  const titleEl = document.getElementById('schMonthTitle');
+  if(titleEl) titleEl.textContent = `${calYear}년 ${calMonth+1}월 일정`;
   const start = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
   const end   = `${calYear}-${String(calMonth+1).padStart(2,'0')}-31`;
-  const list  = db.schedules.filter(s=>s.date>=start&&s.date<=end).sort((a,b)=>a.date.localeCompare(b.date)||( a.time||'').localeCompare(b.time||''));
+  const list  = db.schedules.filter(s=>s.date>=start&&s.date<=end).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
   if(!list.length){
-    el.innerHTML='<div class="empty" style="padding:32px"><div class="empty-icon">📅</div><div>이번 달 일정이 없어요</div></div>';
+    el.innerHTML='<div class="empty" style="padding:40px"><div class="empty-icon">📅</div><div>이번 달 일정이 없어요</div></div>';
     return;
   }
-  // 날짜별 그룹
   const grouped={};
   list.forEach(s=>{(grouped[s.date]=grouped[s.date]||[]).push(s);});
   el.innerHTML = Object.entries(grouped).map(([date,items])=>{
     const diff = Math.ceil((new Date(date)-new Date(tod()))/86400000);
-    const isPast = diff < 0;
-    const isToday = diff === 0;
+    const isPast = diff<0, isToday=diff===0, isSel=date===selDate;
     return `
-      <div style="font-size:12px;font-weight:700;color:${isToday?'var(--primary)':isPast?'var(--text3)':'var(--text2)'};padding:8px 4px 4px;border-bottom:2px solid ${isToday?'var(--primary)':'var(--border)'};margin-bottom:6px;display:flex;align-items:center;gap:8px">
-        ${date} ${isToday?'<span style="background:var(--primary);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px">오늘</span>':isPast?'<span style="color:var(--text3);font-size:11px">지남</span>':`<span style="color:var(--primary);font-size:11px;font-weight:800">D-${diff}</span>`}
-      </div>
-      ${items.map(s=>`
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 6px;background:var(--surface);border-radius:var(--radius-sm);margin-bottom:6px;box-shadow:var(--shadow);opacity:${isPast?.6:1};border-left:3px solid ${catColor[s.cat]||'var(--primary)'}">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${s.title}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
-              <span>${s.time||'종일'}</span>
-              <span class="badge b-gray">${s.cat||'기타'}</span>
-              ${s.memo?`<span>${s.memo}</span>`:''}
-            </div>
-          </div>
-          <div style="display:flex;gap:4px;flex-shrink:0">
-            <button class="btn btn-xs" onclick="editSchedule('${s.id}')">수정</button>
-            <button class="btn btn-xs btn-outline-red" onclick="deleteSchedule('${s.id}');renderMonthSchedule()">삭제</button>
-          </div>
-        </div>`).join('')}`;
+      <div id="schDay_${date}" style="margin-bottom:12px;border-radius:var(--radius-sm);overflow:hidden;border:2px solid ${isSel?'var(--primary)':isToday?'var(--amber)':'transparent'}">
+        <div style="font-size:12px;font-weight:700;padding:7px 10px;background:${isToday?'var(--amber-light)':isSel?'var(--primary-light)':'var(--surface2)'};color:${isToday?'var(--amber)':isSel?'var(--primary)':isPast?'var(--text3)':'var(--text2)'};display:flex;align-items:center;gap:8px;cursor:pointer" onclick="selectDate('${date}')">
+          ${date}
+          ${isToday?'<span style="background:var(--amber);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px">오늘</span>':''}
+          ${isSel&&!isToday?'<span style="background:var(--primary);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px">선택</span>':''}
+          ${!isPast&&!isToday?`<span style="color:var(--primary);font-size:11px;font-weight:800;margin-left:auto">D-${diff}</span>`:''}
+          ${isPast?'<span style="color:var(--text3);font-size:10px;margin-left:auto">지남</span>':''}
+        </div>
+        <div style="padding:4px 6px 6px;background:var(--surface);opacity:${isPast?.7:1}">
+          ${items.map(s=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius-xs);margin-top:4px;border-left:3px solid ${catColor[s.cat]||'var(--primary)'}">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">${s.title}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap">
+                  <span>${s.time||'종일'}</span>
+                  <span class="badge b-gray" style="font-size:10px">${s.cat||'기타'}</span>
+                  ${s.memo?`<span>${s.memo}</span>`:''}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;flex-shrink:0">
+                <button class="btn btn-xs" onclick="editSchedule('${s.id}')">수정</button>
+                <button class="btn btn-xs btn-outline-red" onclick="deleteSchedule('${s.id}');renderMonthSchedule()">삭제</button>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
   }).join('');
 }
 
@@ -2142,9 +2171,16 @@ function renderBuilding(bldKey){
                 </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
                   ${insp.report?`<div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px;color:var(--text3)">보고서</span><span class="badge ${reportColors[insp.report]||'b-gray'}">${insp.report}</span></div>`:''}
-                  ${insp.repair?`<div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px;color:var(--text3)">보수</span><span class="badge ${repairColors[insp.repair]||'b-gray'}">${insp.repair}</span></div>`:''}
                 </div>
-                ${insp.memo?`<div style="font-size:12px;color:var(--text2);background:var(--surface);padding:8px;border-radius:var(--radius-xs);white-space:pre-line">${insp.memo}</div>`:''}
+                ${insp.memo?`<div style="font-size:12px;color:var(--text2);background:var(--surface);padding:8px;border-radius:var(--radius-xs);white-space:pre-line;margin-top:4px">${insp.memo}</div>`:''}
+                <!-- 보완사항 섹션 -->
+                <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <div style="font-size:12px;font-weight:700;color:var(--text2)">📋 보완사항</div>
+                    <button class="btn btn-xs btn-outline-primary" onclick="openAddRemedy('${insp.id}','${bldKey}')">+ 추가</button>
+                  </div>
+                  <div id="remedyList_${insp.id}">${renderRemedyList(insp.id)}</div>
+                </div>
               </div>
             `).join('') : `<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">등록된 점검 이력이 없어요<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openAddInspection('${bldKey}')">+ 점검 등록</button></div>`}
           </div>
@@ -2197,7 +2233,6 @@ function openEditInspection(id){
   document.getElementById('insp_end').value=insp.end||'';
   document.getElementById('insp_company').value=insp.company||'';
   document.getElementById('insp_report').value=insp.report||'';
-  document.getElementById('insp_repair').value=insp.repair||'';
   document.getElementById('insp_memo').value=insp.memo||'';
   populateInspFY();
   document.getElementById('insp_fy').value=insp.fy||getCurrentFY();
@@ -2213,15 +2248,14 @@ function saveInspection(){
   const end=document.getElementById('insp_end').value;
   const company=document.getElementById('insp_company').value.trim();
   const report=document.getElementById('insp_report').value;
-  const repair=document.getElementById('insp_repair').value;
   const memo=document.getElementById('insp_memo').value.trim();
   if(!type||!start||!end){toast('점검종류, 시작일, 종료일은 필수입니다','error');return;}
   db.inspections=db.inspections||[];
   if(id){
     const insp=db.inspections.find(x=>x.id===id);
-    if(insp)Object.assign(insp,{fy,type,start,end,company,report,repair,memo,updatedAt:tod(),by:getW()});
+    if(insp)Object.assign(insp,{fy,type,start,end,company,report,memo,updatedAt:tod(),by:getW()});
   } else {
-    db.inspections.push({id:uid(),bld,fy,type,start,end,company,report,repair,memo,createdAt:tod(),by:getW()});
+    db.inspections.push({id:uid(),bld,fy,type,start,end,company,report,memo,createdAt:tod(),by:getW()});
   }
   saveLocal();closeModal('addInspection');
   renderBuilding(bld);
@@ -2231,6 +2265,112 @@ function deleteInspection(id,bldKey){
   if(!confirm('삭제하시겠습니까?'))return;
   db.inspections=(db.inspections||[]).filter(x=>x.id!==id);
   saveLocal();renderBuilding(bldKey);toast('삭제됐습니다');
+}
+
+
+// ── 보완사항 ──
+const REMEDY_STATUS = {
+  '자체보수': {color:'var(--primary)', badge:'b-primary', icon:'🔧'},
+  '업체보수': {color:'var(--amber)',   badge:'b-amber',   icon:'🏗️'},
+  '완료':     {color:'var(--green)',   badge:'b-green',   icon:'✅'}
+};
+
+function renderRemedyList(inspId){
+  const rems = (db.remedies||[]).filter(r=>r.inspId===inspId);
+  if(!rems.length) return '<div style="font-size:12px;color:var(--text3);padding:4px 0">등록된 보완사항이 없어요</div>';
+  const total = rems.length;
+  const done  = rems.filter(r=>r.status==='완료').length;
+  return `
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">
+      전체 ${total}건 · 완료 ${done}건 · 미완료 ${total-done}건
+    </div>
+    ${rems.map(r=>{
+      const st = REMEDY_STATUS[r.status]||{color:'var(--gray)',badge:'b-gray',icon:'📌'};
+      return `<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 8px;background:var(--surface);border-radius:var(--radius-xs);margin-bottom:5px;border-left:3px solid ${st.color}">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:var(--text);line-height:1.5">${r.content}</div>
+          ${r.memo?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${r.memo}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <span class="badge ${st.badge}" style="font-size:10px">${st.icon} ${r.status||'미처리'}</span>
+          <div style="display:flex;gap:3px">
+            <button class="btn btn-xs" onclick="openEditRemedy('${r.id}')" style="font-size:10px;padding:2px 6px">수정</button>
+            <button class="btn btn-xs btn-outline-red" onclick="deleteRemedy('${r.id}','${inspId}')" style="font-size:10px;padding:2px 6px">삭제</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function selectRemedyStatus(s){
+  document.getElementById('rem_status').value=s;
+  ['자체보수','업체보수','완료'].forEach(x=>{
+    const btn=document.getElementById('rem_s_'+x);
+    const st=REMEDY_STATUS[x];
+    btn.style.background=x===s?st.color:'';
+    btn.style.color=x===s?'#fff':'';
+    btn.style.fontWeight=x===s?'700':'400';
+    btn.style.borderColor=x===s?st.color:'var(--border2)';
+  });
+}
+
+function openAddRemedy(inspId, bldKey){
+  document.getElementById('rem_id').value='';
+  document.getElementById('rem_inspId').value=inspId;
+  document.getElementById('rem_bld').value=bldKey;
+  document.getElementById('remedyModalTitle').textContent='보완사항 등록';
+  document.getElementById('rem_content').value='';
+  document.getElementById('rem_memo').value='';
+  document.getElementById('rem_status').value='';
+  ['자체보수','업체보수','완료'].forEach(x=>{
+    const btn=document.getElementById('rem_s_'+x);
+    btn.style.background='';btn.style.color='';btn.style.fontWeight='400';btn.style.borderColor='var(--border2)';
+  });
+  openModal('addRemedy');
+}
+
+function openEditRemedy(id){
+  const r=(db.remedies||[]).find(x=>x.id===id);if(!r)return;
+  document.getElementById('rem_id').value=id;
+  document.getElementById('rem_inspId').value=r.inspId;
+  document.getElementById('rem_bld').value=r.bld;
+  document.getElementById('remedyModalTitle').textContent='보완사항 수정';
+  document.getElementById('rem_content').value=r.content||'';
+  document.getElementById('rem_memo').value=r.memo||'';
+  selectRemedyStatus(r.status||'자체보수');
+  openModal('addRemedy');
+}
+
+function saveRemedy(){
+  const id=document.getElementById('rem_id').value;
+  const inspId=document.getElementById('rem_inspId').value;
+  const bld=document.getElementById('rem_bld').value;
+  const content=document.getElementById('rem_content').value.trim();
+  const status=document.getElementById('rem_status').value;
+  const memo=document.getElementById('rem_memo').value.trim();
+  if(!content){toast('보완 내용을 입력해 주세요','error');return;}
+  if(!status){toast('처리 방법을 선택해 주세요','error');return;}
+  db.remedies=db.remedies||[];
+  if(id){
+    const r=db.remedies.find(x=>x.id===id);
+    if(r)Object.assign(r,{content,status,memo,updatedAt:tod(),by:getW()});
+  } else {
+    db.remedies.push({id:uid(),inspId,bld,content,status,memo,createdAt:tod(),by:getW()});
+  }
+  saveLocal();closeModal('addRemedy');
+  // 해당 점검의 보완사항 목록만 업데이트
+  const listEl=document.getElementById('remedyList_'+inspId);
+  if(listEl)listEl.innerHTML=renderRemedyList(inspId);
+  toast(id?'수정됐습니다':'등록됐습니다','success');
+}
+
+function deleteRemedy(id, inspId){
+  if(!confirm('삭제하시겠습니까?'))return;
+  db.remedies=(db.remedies||[]).filter(x=>x.id!==id);
+  saveLocal();
+  const listEl=document.getElementById('remedyList_'+inspId);
+  if(listEl)listEl.innerHTML=renderRemedyList(inspId);
+  toast('삭제됐습니다');
 }
 
 // ── Toast ──
