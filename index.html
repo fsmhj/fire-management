@@ -156,18 +156,18 @@ textarea{resize:vertical;min-height:80px}
 .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-month{font-size:16px;font-weight:700;color:var(--text)}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px}
-.cal-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:4px 0}
+.cal-dow{text-align:center;font-size:10px;font-weight:600;color:var(--text3);padding:3px 0}
 .cal-dow:first-child{color:var(--red)}.cal-dow:last-child{color:var(--primary)}
 .cal-day{aspect-ratio:1;border-radius:var(--radius-xs);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;cursor:pointer;transition:background .1s}
 .cal-day:hover{background:var(--surface2)}
-.cal-day.today .cal-num{background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.cal-day.today .cal-num{background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px}
 .cal-day.selected{background:var(--primary-light)}
 .cal-day.other-month .cal-num{color:var(--text3)}
 .cal-day.sun .cal-num{color:var(--red)}.cal-day.sat .cal-num{color:var(--primary)}
-.cal-num{font-size:12px;font-weight:500;line-height:22px;color:var(--text)}
+.cal-num{font-size:11px;font-weight:500;line-height:20px;color:var(--text)}
 .cal-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px}
 .cal-dot{width:5px;height:5px;border-radius:50%}
-.sch-item{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:10px 14px;margin-bottom:6px;border-left:4px solid var(--primary);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sch-item{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:8px 10px;margin-bottom:6px;border-left:3px solid var(--primary);display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
 .sch-title{font-size:14px;font-weight:600;color:var(--text)}
 .sch-meta{font-size:11px;color:var(--text3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
 .sch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
@@ -261,6 +261,18 @@ textarea{resize:vertical;min-height:80px}
       </div>
       <div id="homeSchedule" style="padding:10px"></div>
     </div>
+    <!-- 점검 현황 요약 -->
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:700;color:var(--text)">🔍 점검 현황</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-xs" onclick="switchPage('jongham')">종합관 →</button>
+          <button class="btn btn-xs" onclick="switchPage('seomigam')">서미감관 →</button>
+        </div>
+      </div>
+      <div id="homeInspection" style="padding:10px"></div>
+    </div>
+
     <!-- 최근 업무일지 -->
     <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden">
       <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
@@ -332,22 +344,25 @@ textarea{resize:vertical;min-height:80px}
 
     <!-- 날짜별 뷰 -->
     <div id="schViewDay">
-      <!-- 미니 달력 -->
-      <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <button class="btn btn-sm" onclick="moveMonth(-1)" style="padding:4px 10px">‹</button>
-          <div class="cal-month" id="calMonth" style="font-size:14px"></div>
-          <button class="btn btn-sm" onclick="moveMonth(1)" style="padding:4px 10px">›</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+        <!-- 왼쪽: 달력 -->
+        <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <button class="btn btn-sm" onclick="moveMonth(-1)" style="padding:4px 8px;font-size:12px">‹</button>
+            <div class="cal-month" id="calMonth" style="font-size:13px"></div>
+            <button class="btn btn-sm" onclick="moveMonth(1)" style="padding:4px 8px;font-size:12px">›</button>
+          </div>
+          <div class="calendar-grid" id="calGrid" style="gap:1px"></div>
         </div>
-        <div class="calendar-grid" id="calGrid" style="gap:1px"></div>
+        <!-- 오른쪽: 선택일 일정 -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="selected-date-label" id="selectedDateLabel"></div>
+            <button class="btn btn-primary btn-sm" onclick="openAddSchedule()" style="font-size:11px;padding:4px 10px">+추가</button>
+          </div>
+          <div id="scheduleList"></div>
+        </div>
       </div>
-
-      <!-- 선택일 일정 -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px">
-        <div class="selected-date-label" id="selectedDateLabel" style="margin-bottom:0;padding:0;border:none"></div>
-        <button class="btn btn-primary btn-sm" onclick="openAddSchedule()">+ 일정 추가</button>
-      </div>
-      <div id="scheduleList"></div>
     </div>
 
     <!-- 이번 달 전체 뷰 -->
@@ -371,6 +386,17 @@ textarea{resize:vertical;min-height:80px}
       <button class="btn btn-primary btn-sm" onclick="openAddMemo()">+ 메모 추가</button>
     </div></div>
     <div id="memoList"></div>
+  </div>
+
+
+  <!-- 종합관 -->
+  <div class="page" id="page-jongham">
+    <div id="jonghamContent"></div>
+  </div>
+
+  <!-- 서미감관 -->
+  <div class="page" id="page-seomigam">
+    <div id="seomigamContent"></div>
   </div>
 
   <!-- 설정 -->
@@ -682,6 +708,67 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div></div>
 
+
+<!-- 모달: 점검 등록 -->
+<div class="modal-overlay" id="modal-addInspection"><div class="modal">
+  <div class="modal-handle"></div>
+  <div class="modal-title" id="inspModalTitle">점검 등록</div>
+  <input type="hidden" id="insp_id">
+  <input type="hidden" id="insp_bld">
+  <div class="form-group">
+    <label class="form-label">회계연도 *</label>
+    <select id="insp_fy"></select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">점검 종류 *</label>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="insp_t_종합" onclick="selectInspType('종합')" style="flex:1">📋 종합점검</button>
+      <button class="btn" id="insp_t_작동" onclick="selectInspType('작동')" style="flex:1">⚙️ 작동점검</button>
+    </div>
+    <input type="hidden" id="insp_type">
+  </div>
+  <div class="input-row">
+    <div class="form-group">
+      <label class="form-label">시작일 *</label>
+      <input type="date" id="insp_start">
+    </div>
+    <div class="form-group">
+      <label class="form-label">종료일 *</label>
+      <input type="date" id="insp_end">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">점검업체</label>
+    <input type="text" id="insp_company" placeholder="점검업체명">
+  </div>
+  <div class="form-group">
+    <label class="form-label">보고서 제출 현황</label>
+    <select id="insp_report">
+      <option value="">-</option>
+      <option value="업체작성중">📝 업체 작성중</option>
+      <option value="자료검토중">🔍 자료 검토중</option>
+      <option value="소방서제출완료">✅ 소방서 제출완료</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">보수 현황</label>
+    <select id="insp_repair">
+      <option value="">-</option>
+      <option value="자체점검">🔧 자체점검</option>
+      <option value="업체보수">🏗️ 업체보수</option>
+      <option value="완료">✅ 완료</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">메모</label>
+    <textarea id="insp_memo" placeholder="특이사항, 준비사항 등..." style="min-height:70px"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('addInspection')">취소</button>
+    <button class="btn btn-primary" onclick="saveInspection()">저장</button>
+  </div>
+</div></div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -705,6 +792,8 @@ const ALL_TABS = [
   {id:'journal',label:'📝 업무일지'},
   {id:'schedule',label:'📅 일정'},
   {id:'memo',label:'🗒️ 메모'},
+  {id:'jongham',label:'🏢 종합관'},
+  {id:'seomigam',label:'🏛️ 서미감관'},
   {id:'settings',label:'⚙️ 설정'}
 ];
 
@@ -717,6 +806,7 @@ let db={
   categories:['소화기류','호스·관창','감지기','밸브류','기타'],
   hospitals:['원주세브란스병원','원주기독병원'],
   univs:['연세대학교 미래캠퍼스','상지대학교'],
+  inspections:[],
   userPw:DEFAULT_USER_PW,
   adminPw:DEFAULT_ADMIN_PW,
   units:['EA','개','본','롤','박스','세트','kg','L'],
@@ -748,7 +838,7 @@ function doLogin(){
     } else if(pw===userPw){
       isAdmin=false;userName=name;
       const member=db.members.find(m=>m.name===name);
-      myTabs=member?member.tabs:['home','inv','journal','schedule','memo'];
+      myTabs=member?member.tabs:['home','inv','journal','schedule','memo','jongham','seomigam'];
       enterApp();
     } else {
       err.textContent='비밀번호가 올바르지 않습니다';err.style.display='block';
@@ -880,12 +970,16 @@ function switchPage(p){
 }
 function renderAll(){
   renderHome();renderInv();renderJournal();renderCalendar();renderScheduleList();renderMemo();renderSettings();
+  if(document.getElementById('jonghamContent'))renderBuilding('jongham');
+  if(document.getElementById('seomigamContent'))renderBuilding('seomigam');
 }
 function renderCurrent(){
   if(curPage==='inv')renderInv();
   if(curPage==='journal')renderJournal();
   if(curPage==='schedule'){renderCalendar();renderScheduleList();}
   if(curPage==='home')renderHome();
+  if(curPage==='jongham')renderBuilding('jongham');
+  if(curPage==='seomigam')renderBuilding('seomigam');
   if(curPage==='memo')renderMemo();
   if(curPage==='settings')renderSettings();
   if(curPage==='txnHistory'){renderTxnHistory();}
@@ -1845,6 +1939,30 @@ function renderHome(){
     }
   }
 
+  // 점검 현황 요약
+  const inspEl = document.getElementById('homeInspection');
+  if(inspEl){
+    const curFY = getCurrentFY();
+    const blds = ['jongham','seomigam'];
+    inspEl.innerHTML = blds.map(bldKey=>{
+      const cfg = BLD_CONFIG[bldKey];
+      const insps = (db.inspections||[]).filter(x=>x.bld===bldKey&&x.fy===curFY);
+      const reportColors={'업체작성중':'var(--amber)','자료검토중':'var(--primary)','소방서제출완료':'var(--green)'};
+      const repairColors={'자체점검':'var(--primary)','업체보수':'var(--amber)','완료':'var(--green)'};
+      return `<div style="padding:8px 4px;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${cfg.icon} ${cfg.name}</div>
+        ${insps.length?insps.map(insp=>`
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+            <span class="badge b-gray">${insp.type}점검</span>
+            <span style="font-size:11px;color:var(--text3)">${insp.start}~${insp.end}</span>
+            ${insp.report?`<span style="font-size:11px;font-weight:600;color:${reportColors[insp.report]||'var(--text3)'}">📋 ${insp.report}</span>`:''}
+            ${insp.repair?`<span style="font-size:11px;font-weight:600;color:${repairColors[insp.repair]||'var(--text3)'}">🔧 ${insp.repair}</span>`:''}
+          </div>`).join(''):
+          `<div style="font-size:12px;color:var(--text3)">등록된 점검 없음</div>`}
+      </div>`;
+    }).join('');
+  }
+
   // 최근 업무일지 3개
   const jrnEl = document.getElementById('homeJournal');
   if(jrnEl){
@@ -1929,6 +2047,190 @@ function renderMonthSchedule(){
           </div>
         </div>`).join('')}`;
   }).join('');
+}
+
+
+// ── 종합관/서미감관 ──
+const BLD_CONFIG = {
+  jongham: {
+    name:'종합관', icon:'🏢',
+    schedules:[
+      {month:2, type:'종합', label:'상반기 종합점검'},
+      {month:8, type:'작동', label:'하반기 작동점검'}
+    ]
+  },
+  seomigam: {
+    name:'서미감관', icon:'🏛️',
+    schedules:[
+      {month:5, type:'작동', label:'상반기 작동점검'},
+      {month:6, type:'종합', label:'상반기 종합점검'}
+    ]
+  }
+};
+
+function getFYLabel(fy){ return `${fy}년도 (${fy}.03.01 ~ ${fy+1}.02.28)`; }
+function getCurrentFY(){
+  const now = new Date();
+  return now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear()-1;
+}
+function getFYRange(fy){ return {start:`${fy}-03-01`, end:`${fy+1}-02-28`}; }
+function getItemFY(dateStr){
+  if(!dateStr) return getCurrentFY();
+  const d = new Date(dateStr);
+  return d.getMonth() >= 2 ? d.getFullYear() : d.getFullYear()-1;
+}
+
+function renderBuilding(bldKey){
+  const cfg = BLD_CONFIG[bldKey];
+  const el = document.getElementById(bldKey+'Content');
+  if(!el) return;
+
+  const insps = (db.inspections||[]).filter(x=>x.bld===bldKey);
+  // 회계연도 목록
+  const fySet = new Set(insps.map(x=>x.fy));
+  const curFY = getCurrentFY();
+  fySet.add(curFY);
+  const fys = [...fySet].sort((a,b)=>b-a);
+
+  const reportColors = {'업체작성중':'b-amber','자료검토중':'b-primary','소방서제출완료':'b-green'};
+  const repairColors = {'자체점검':'b-primary','업체보수':'b-amber','완료':'b-green'};
+  const typeColors = {'종합':'b-primary','작동':'b-teal'};
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">${cfg.icon} ${cfg.name}</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddInspection('${bldKey}')">+ 점검 등록</button>
+    </div>
+
+    <!-- 예정 점검월 안내 -->
+    <div style="background:var(--primary-light);border:1px solid var(--primary-border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:6px">📅 정기 점검 일정</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${cfg.schedules.map(s=>`
+          <span class="badge ${typeColors[s.type]||'b-gray'}">${s.month}월 ${s.type}점검 (${s.label})</span>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- 회계연도별 점검 이력 -->
+    ${fys.map(fy => {
+      const fyInsps = insps.filter(x=>x.fy===fy).sort((a,b)=>a.start.localeCompare(b.start));
+      const isCur = fy === curFY;
+      return `
+        <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;${isCur?'border:2px solid var(--primary)':''}">
+          <div style="padding:12px 16px;background:${isCur?'var(--primary-light)':'var(--surface2)'};border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:13px;font-weight:700;color:${isCur?'var(--primary)':'var(--text2)'}">
+              ${isCur?'📌 ':''}${getFYLabel(fy)}
+            </div>
+            ${isCur?'<span class="badge b-primary">현재</span>':''}
+          </div>
+          <div style="padding:10px">
+            ${fyInsps.length ? fyInsps.map(insp => `
+              <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--${insp.type==='종합'?'primary':'teal'})">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+                  <div style="flex:1">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+                      <span class="badge ${typeColors[insp.type]||'b-gray'}">${insp.type}점검</span>
+                      <span style="font-size:13px;font-weight:700;color:var(--text)">${insp.start} ~ ${insp.end}</span>
+                    </div>
+                    ${insp.company?`<div style="font-size:12px;color:var(--text3)">업체: ${insp.company}</div>`:''}
+                  </div>
+                  <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button class="btn btn-xs" onclick="openEditInspection('${insp.id}')">수정</button>
+                    <button class="btn btn-xs btn-outline-red" onclick="deleteInspection('${insp.id}','${bldKey}')">삭제</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                  ${insp.report?`<div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px;color:var(--text3)">보고서</span><span class="badge ${reportColors[insp.report]||'b-gray'}">${insp.report}</span></div>`:''}
+                  ${insp.repair?`<div style="display:flex;align-items:center;gap:4px"><span style="font-size:11px;color:var(--text3)">보수</span><span class="badge ${repairColors[insp.repair]||'b-gray'}">${insp.repair}</span></div>`:''}
+                </div>
+                ${insp.memo?`<div style="font-size:12px;color:var(--text2);background:var(--surface);padding:8px;border-radius:var(--radius-xs);white-space:pre-line">${insp.memo}</div>`:''}
+              </div>
+            `).join('') : `<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">등록된 점검 이력이 없어요<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openAddInspection('${bldKey}')">+ 점검 등록</button></div>`}
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+// 점검 등록
+function selectInspType(t){
+  document.getElementById('insp_type').value=t;
+  ['종합','작동'].forEach(x=>{
+    const btn=document.getElementById('insp_t_'+x);
+    btn.style.background=x===t?'var(--primary)':'';
+    btn.style.color=x===t?'#fff':'';
+    btn.style.fontWeight=x===t?'700':'400';
+    btn.style.borderColor=x===t?'var(--primary)':'var(--border2)';
+  });
+}
+function populateInspFY(){
+  const sel=document.getElementById('insp_fy');
+  const curFY=getCurrentFY();
+  sel.innerHTML=[curFY,curFY-1,curFY-2,curFY+1].sort((a,b)=>b-a).map(fy=>
+    `<option value="${fy}"${fy===curFY?' selected':''}>${getFYLabel(fy)}</option>`
+  ).join('');
+}
+function openAddInspection(bldKey){
+  document.getElementById('insp_id').value='';
+  document.getElementById('insp_bld').value=bldKey;
+  document.getElementById('inspModalTitle').textContent=BLD_CONFIG[bldKey]?.name+' 점검 등록';
+  document.getElementById('insp_type').value='';
+  document.getElementById('insp_start').value='';
+  document.getElementById('insp_end').value='';
+  document.getElementById('insp_company').value='';
+  document.getElementById('insp_report').value='';
+  document.getElementById('insp_repair').value='';
+  document.getElementById('insp_memo').value='';
+  ['종합','작동'].forEach(x=>{
+    const btn=document.getElementById('insp_t_'+x);
+    btn.style.background='';btn.style.color='';btn.style.fontWeight='400';btn.style.borderColor='var(--border2)';
+  });
+  populateInspFY();
+  openModal('addInspection');
+}
+function openEditInspection(id){
+  const insp=(db.inspections||[]).find(x=>x.id===id);if(!insp)return;
+  document.getElementById('insp_id').value=id;
+  document.getElementById('insp_bld').value=insp.bld;
+  document.getElementById('inspModalTitle').textContent=BLD_CONFIG[insp.bld]?.name+' 점검 수정';
+  document.getElementById('insp_start').value=insp.start||'';
+  document.getElementById('insp_end').value=insp.end||'';
+  document.getElementById('insp_company').value=insp.company||'';
+  document.getElementById('insp_report').value=insp.report||'';
+  document.getElementById('insp_repair').value=insp.repair||'';
+  document.getElementById('insp_memo').value=insp.memo||'';
+  populateInspFY();
+  document.getElementById('insp_fy').value=insp.fy||getCurrentFY();
+  selectInspType(insp.type||'종합');
+  openModal('addInspection');
+}
+function saveInspection(){
+  const id=document.getElementById('insp_id').value;
+  const bld=document.getElementById('insp_bld').value;
+  const fy=parseInt(document.getElementById('insp_fy').value);
+  const type=document.getElementById('insp_type').value;
+  const start=document.getElementById('insp_start').value;
+  const end=document.getElementById('insp_end').value;
+  const company=document.getElementById('insp_company').value.trim();
+  const report=document.getElementById('insp_report').value;
+  const repair=document.getElementById('insp_repair').value;
+  const memo=document.getElementById('insp_memo').value.trim();
+  if(!type||!start||!end){toast('점검종류, 시작일, 종료일은 필수입니다','error');return;}
+  db.inspections=db.inspections||[];
+  if(id){
+    const insp=db.inspections.find(x=>x.id===id);
+    if(insp)Object.assign(insp,{fy,type,start,end,company,report,repair,memo,updatedAt:tod(),by:getW()});
+  } else {
+    db.inspections.push({id:uid(),bld,fy,type,start,end,company,report,repair,memo,createdAt:tod(),by:getW()});
+  }
+  saveLocal();closeModal('addInspection');
+  renderBuilding(bld);
+  toast(id?'수정됐습니다':'등록됐습니다','success');
+}
+function deleteInspection(id,bldKey){
+  if(!confirm('삭제하시겠습니까?'))return;
+  db.inspections=(db.inspections||[]).filter(x=>x.id!==id);
+  saveLocal();renderBuilding(bldKey);toast('삭제됐습니다');
 }
 
 // ── Toast ──
