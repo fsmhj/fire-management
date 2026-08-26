@@ -796,6 +796,35 @@ const FIREBASE_CONFIG={
 // ── 기본값 ──
 const DEFAULT_USER_PW  = 'fire1234';   // 일반 비밀번호
 const DEFAULT_ADMIN_PW = 'admin9999';  // 관리자 비밀번호
+
+const BLD_CONFIG = {
+  jongham: {
+    name:'종합관', icon:'🏢',
+    schedules:[
+      {month:2, type:'종합', label:'상반기 종합점검'},
+      {month:8, type:'작동', label:'하반기 작동점검'}
+    ]
+  },
+  seomigam: {
+    name:'서미감관', icon:'🏛️',
+    schedules:[
+      {month:5, type:'작동', label:'상반기 작동점검'},
+      {month:6, type:'종합', label:'상반기 종합점검'}
+    ]
+  }
+};
+
+function getFYLabel(fy){ return `${fy}년도 (${fy}.03.01 ~ ${fy+1}.02.28)`; }
+function getCurrentFY(){
+  const now = new Date();
+  return now.getMonth() >= 2 ? now.getFullYear() : now.getFullYear()-1;
+}
+function getFYRange(fy){ return {start:`${fy}-03-01`, end:`${fy+1}-02-28`}; }
+function getItemFY(dateStr){
+  if(!dateStr) return getCurrentFY();
+  const d = new Date(dateStr);
+  return d.getMonth() >= 2 ? d.getFullYear() : d.getFullYear()-1;
+}
 const ALL_TABS = [
   {id:'home',label:'🏠 메인보드'},
   {id:'inv',label:'📦 재고'},
@@ -1898,101 +1927,104 @@ function renderTxnHistory(){
 
 // ── 메인보드 ──
 function renderHome(){
-  const todStr = tod();
-  const hour = new Date().getHours();
-  const greet = hour<12?'좋은 아침이에요 ☀️':hour<18?'안녕하세요 😊':'수고하셨어요 🌙';
-  const greetEl = document.getElementById('homeGreeting');
-  if(greetEl) greetEl.innerHTML=`
-    <div style="background:var(--primary);border-radius:var(--radius);padding:14px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:12px;opacity:.85;margin-bottom:3px">${greet}</div>
-        <div style="font-size:17px;font-weight:700">${userName||'팀원'}님 👋</div>
-      </div>
-      <div style="font-size:13px;opacity:.75;text-align:right">
-        <div>${todStr}</div>
-        <div style="margin-top:3px;font-size:11px">소방업무공유</div>
-      </div>
-    </div>`;
+  var todStr = tod();
+  var hour = new Date().getHours();
+  var greet = hour<12?'좋은 아침이에요 ☀️':hour<18?'안녕하세요 😊':'수고하셨어요 🌙';
+  var greetEl = document.getElementById('homeGreeting');
+  if(greetEl){
+    greetEl.innerHTML = '<div style="background:var(--primary);border-radius:var(--radius);padding:14px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between">'
+      + '<div><div style="font-size:12px;opacity:.85;margin-bottom:3px">'+greet+'</div>'
+      + '<div style="font-size:17px;font-weight:700">'+(userName||'팀원')+'님 👋</div></div>'
+      + '<div style="font-size:13px;opacity:.75;text-align:right"><div>'+todStr+'</div>'
+      + '<div style="margin-top:3px;font-size:11px">소방업무공유</div></div></div>';
+  }
+
+  // 오늘·예정 일정
+  var schEl = document.getElementById('homeSchedule');
+  if(schEl){
+    var upcoming = db.schedules.filter(function(s){return s.date>=todStr;})
+      .sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,5);
+    if(!upcoming.length){
+      schEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--green);font-size:13px">예정된 일정이 없어요</div>';
+    } else {
+      var sh='';
+      upcoming.forEach(function(s){
+        var diff=Math.ceil((new Date(s.date)-new Date(todStr))/86400000);
+        var isT=diff===0;
+        var col=isT?'var(--red)':diff<=3?'var(--amber)':'var(--primary)';
+        sh+='<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage(\'schedule\')">'
+          +'<div style="min-width:44px;text-align:center;font-size:12px;font-weight:800;color:'+col+';font-family:monospace">'+(isT?'TODAY':'D-'+diff)+'</div>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:13px;font-weight:700;color:var(--text)">'+s.title+'</div>'
+          +'<div style="font-size:11px;color:var(--text3)">'+s.date+(s.time?' '+s.time:'')+' · '+(s.cat||'기타')+'</div>'
+          +'</div></div>';
+      });
+      schEl.innerHTML=sh;
+    }
+  }
 
   // 부족 품목
-  const lowEl = document.getElementById('homeLowStock');
+  var lowEl = document.getElementById('homeLowStock');
   if(lowEl){
-    const lows = db.items.filter(it=>it.min>0&&it.qty<=it.min);
+    var lows = db.items.filter(function(it){return it.min>0&&it.qty<=it.min;});
     if(!lows.length){
       lowEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--green);font-size:13px">✓ 모든 품목 재고 정상</div>';
     } else {
-      lowEl.innerHTML = lows.map(it=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid var(--border)">
-          <span style="font-size:13px;color:var(--text);font-weight:600">${it.name}</span>
-          <span style="font-size:12px;color:var(--red);font-weight:700">${it.qty}${it.unit||'개'} / 최소 ${it.min}${it.unit||'개'}</span>
-        </div>`).join('');
+      var lh='';
+      lows.forEach(function(it){
+        lh+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid var(--border);font-size:12px">'
+          +'<span style="color:var(--text);font-weight:600">'+it.name+'</span>'
+          +'<span style="color:var(--red);font-weight:700">'+it.qty+(it.unit||'개')+' / 최소 '+it.min+(it.unit||'개')+'</span>'
+          +'</div>';
+      });
+      lowEl.innerHTML=lh;
     }
   }
 
-  // 오늘 + D-7 이내 일정
-  const schEl = document.getElementById('homeSchedule');
-  if(schEl){
-    const upcoming = db.schedules
-      .filter(s=>s.date>=todStr)
-      .sort((a,b)=>a.date.localeCompare(b.date))
-      .slice(0,5);
-    if(!upcoming.length){
-      schEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px">예정된 일정이 없어요</div>';
-    } else {
-      schEl.innerHTML = upcoming.map(s=>{
-        const diff = Math.ceil((new Date(s.date)-new Date(todStr))/86400000);
-        const isToday = diff===0;
-        const color = isToday?'var(--red)':diff<=3?'var(--amber)':'var(--primary)';
-        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage('schedule')">
-          <div style="min-width:44px;text-align:center;font-size:12px;font-weight:800;color:${color};font-family:monospace">${isToday?'TODAY':'D-'+diff}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${s.title}</div>
-            <div style="font-size:11px;color:var(--text3)">${s.date} ${s.time||''} · ${s.cat||'기타'}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // 점검 현황 요약
-  const inspEl = document.getElementById('homeInspection');
+  // 점검 현황
+  var inspEl = document.getElementById('homeInspection');
   if(inspEl){
-    const curFY = getCurrentFY();
-    const blds = ['jongham','seomigam'];
-    inspEl.innerHTML = blds.map(bldKey=>{
-      const cfg = BLD_CONFIG[bldKey];
-      const insps = (db.inspections||[]).filter(x=>x.bld===bldKey&&x.fy===curFY);
-      const reportColors={'업체작성중':'var(--amber)','자료검토중':'var(--primary)','소방서제출완료':'var(--green)'};
-      const repairColors={'자체점검':'var(--primary)','업체보수':'var(--amber)','완료':'var(--green)'};
-      return `<div style="padding:8px 4px;border-bottom:1px solid var(--border)">
-        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${cfg.icon} ${cfg.name}</div>
-        ${insps.length?insps.map(insp=>`
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
-            <span class="badge b-gray">${insp.type}점검</span>
-            <span style="font-size:11px;color:var(--text3)">${insp.start}~${insp.end}</span>
-            ${insp.report?`<span style="font-size:11px;font-weight:600;color:${reportColors[insp.report]||'var(--text3)'}">📋 ${insp.report}</span>`:''}
-            ${insp.repair?`<span style="font-size:11px;font-weight:600;color:${repairColors[insp.repair]||'var(--text3)'}">🔧 ${insp.repair}</span>`:''}
-          </div>`).join(''):
-          `<div style="font-size:12px;color:var(--text3)">등록된 점검 없음</div>`}
-      </div>`;
-    }).join('');
+    var curFY2 = getCurrentFY();
+    var ih='';
+    ['jongham','seomigam'].forEach(function(bldKey){
+      var cfg2 = BLD_CONFIG[bldKey];
+      var bldInsps = (db.inspections||[]).filter(function(x){return x.bld===bldKey&&x.fy===curFY2;});
+      ih+='<div style="padding:8px 4px;border-bottom:1px solid var(--border)">';
+      ih+='<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">'+cfg2.icon+' '+cfg2.name+'</div>';
+      if(bldInsps.length){
+        bldInsps.forEach(function(insp){
+          ih+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">';
+          ih+='<span class="badge b-gray">'+insp.type+'점검</span>';
+          ih+='<span style="font-size:11px;color:var(--text3)">'+insp.start+'~'+insp.end+'</span>';
+          if(insp.report) ih+='<span style="font-size:11px;font-weight:600;color:var(--primary)">📋 '+insp.report+'</span>';
+          ih+='</div>';
+        });
+      } else {
+        ih+='<div style="font-size:12px;color:var(--text3)">등록된 점검 없음</div>';
+      }
+      ih+='</div>';
+    });
+    inspEl.innerHTML=ih;
   }
 
-  // 최근 업무일지 3개
-  const jrnEl = document.getElementById('homeJournal');
+  // 최근 업무일지
+  var jrnEl = document.getElementById('homeJournal');
   if(jrnEl){
-    const recent = [...db.journals].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,3);
+    var recent = [...db.journals].sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);}).slice(0,3);
     if(!recent.length){
       jrnEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:13px">최근 업무일지가 없어요</div>';
     } else {
-      jrnEl.innerHTML = recent.map(j=>`
-        <div style="padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage('journal')">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span class="journal-place ${j.placeType||'hospital'}" style="font-size:11px;padding:2px 8px">${j.place}</span>
-            <span style="font-size:11px;color:var(--text3)">${j.date} · ${j.by||''}</span>
-          </div>
-          <div style="font-size:13px;color:var(--text);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${j.content}</div>
-        </div>`).join('');
+      var jh='';
+      recent.forEach(function(j){
+        jh+='<div style="padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer" onclick="switchPage(\'journal\')">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          +'<span class="journal-place '+(j.placeType||'hospital')+'" style="font-size:11px;padding:2px 8px">'+j.place+'</span>'
+          +'<span style="font-size:11px;color:var(--text3)">'+j.date+' · '+(j.by||'')+'</span>'
+          +'</div>'
+          +'<div style="font-size:13px;color:var(--text);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+j.content+'</div>'
+          +'</div>';
+      });
+      jrnEl.innerHTML=jh;
     }
   }
 }
@@ -2317,18 +2349,4 @@ function filterBulkInList(){
     const already = bulkInSelected[it.id] !== undefined;
     return `<div onclick="addBulkInItem('${it.id}')" style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:${already?'var(--green-light)':'var(--surface)'};transition:background .1s">
       <div>
-        <div style="font-size:13px;font-weight:700;color:var(--text)">${it.name}</div>
-        <div style="font-size:11px;color:var(--text3)">${it.cat||''} · 현재 ${it.qty}${it.unit||'개'}</div>
-      </div>
-      <span style="font-size:12px;color:${already?'var(--green)':'var(--primary)'};font-weight:600">${already?'✓ 추가됨':'+ 추가'}</span>
-    </div>`;
-  }).join('');
-}
-
-function addBulkInItem(id){
-  if(bulkInSelected[id] !== undefined){ toast('이미 추가된 품목이에요'); return; }
-  bulkInSelected[id] = 1;
-  document.getElementById('bulkInSearch').value = '';
-  document.getElementById('bulkInSearchResult').style.display = 'none';
-  document.getElementById('bulkInSearchResult').innerHTML = '';
-  renderBulk
+        <div style="font-size:13px;font-
